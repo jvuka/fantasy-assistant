@@ -5,6 +5,8 @@ import { cookies } from 'next/headers';
 interface SessionData {
   access_token?: string;
   refresh_token?: string;
+  state?: string;
+  code_verifier?: string;
 }
 
 export async function GET(req: NextRequest) {
@@ -12,15 +14,33 @@ export async function GET(req: NextRequest) {
   const code = searchParams.get('code');
   const state = searchParams.get('state');
 
-  if (!code) {
-    return new NextResponse('No code provided', { status: 400 });
+  if (!code || !state) {
+    return new NextResponse('No code or state provided', { status: 400 });
+  }
+
+  const session = await getIronSession<SessionData>(cookies(), {
+    password: process.env.SECRET_COOKIE_PASSWORD as string,
+    cookieName: 'fantasy-assistant-session',
+    cookieOptions: {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+    },
+  });
+
+  if (session.state !== state) {
+    return new NextResponse('Invalid state parameter', { status: 400 });
+  }
+
+  const code_verifier = session.code_verifier;
+  if (!code_verifier) {
+    return new NextResponse('No code verifier found', { status: 400 });
   }
 
   try {
     const tokenUrl = 'https://api.login.yahoo.com/oauth2/get_token';
     const client_id = process.env.NEXT_PUBLIC_YAHOO_CLIENT_ID;
     const client_secret = process.env.YAHOO_CLIENT_SECRET;
-    const redirect_uri = process.env.YAHOO_REDIRECT_URI;
+    const redirect_uri = process.env.NEXT_PUBLIC_YAHOO_REDIRECT_URI || '';
 
     console.log('DEBUG: Environment variables - client_id:', client_id ? 'present' : 'missing', 'client_secret:', client_secret ? 'present' : 'missing', 'redirect_uri:', redirect_uri ? 'present' : 'missing');
 
@@ -41,7 +61,8 @@ export async function GET(req: NextRequest) {
         client_secret,
         redirect_uri,
         code,
-        grant_type: 'authorization_code'
+        grant_type: 'authorization_code',
+        code_verifier
       })
     });
 
