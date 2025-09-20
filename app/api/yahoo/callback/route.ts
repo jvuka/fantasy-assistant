@@ -76,20 +76,19 @@ export async function GET(request: Request) {
   // Exchange code for token
   const tokenUrl = 'https://api.login.yahoo.com/oauth2/get_token';
   const clientId = process.env.YAHOO_CLIENT_ID;
-  const clientSecret = process.env.YAHOO_CLIENT_SECRET;
   const redirectUri = process.env.YAHOO_REDIRECT_URI || 'https://nhl-fantasy-assistant.vercel.app/api/yahoo/callback';
 
   const tokenResponse = await fetch(tokenUrl, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/x-www-form-urlencoded',
-      'Authorization': `Basic ${Buffer.from(`${clientId}:${clientSecret}`).toString('base64')}`,
     },
     body: new URLSearchParams({
       grant_type: 'authorization_code',
       code,
       redirect_uri: redirectUri,
       code_verifier: codeVerifier,
+      client_id: clientId || '',
     }),
   });
 
