@@ -1,0 +1,15 @@
+# dependencies / builds
+node_modules/
+.next/
+out/
+dist/
+build/
+.vercel/
+.turbo/
+
+# env & OS
+.env*
+.DS_Store
+
+# tests/coverage (optional)
+coverage/
