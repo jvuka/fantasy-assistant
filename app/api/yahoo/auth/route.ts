@@ -2,7 +2,9 @@ import { NextResponse } from 'next/server';
 
 export async function GET() {
   const clientId = process.env.YAHOO_CLIENT_ID;
-  const redirectUri = 'https://nhl-fantasy-assistant.vercel.app/api/yahoo/callback';
+  const redirectUri = process.env.YAHOO_REDIRECT_URI || (process.env.NODE_ENV === 'production'
+    ? 'https://nhl-fantasy-assistant.vercel.app/api/yahoo/callback'
+    : 'http://localhost:3000/api/yahoo/callback');
   const scope = 'fspt-r';
   const state = Math.random().toString(36).substring(2, 15);
 

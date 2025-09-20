@@ -66,9 +66,9 @@ export default function YahooLeagues() {
   if (error) {
     return (
       <div>
-        <p>Could not fetch leagues. Please connect your Yahoo account.</p>
-        <a href="/api/yahoo/auth">
-          <button>Connect Yahoo</button>
+        <p className="text-red-500">Could not fetch leagues. Please connect your Yahoo account.</p>
+        <a href="/api/yahoo/auth" className="block w-full text-center bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+          Connect Yahoo
         </a>
       </div>
     );
