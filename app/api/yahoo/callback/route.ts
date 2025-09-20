@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getIronSession } from 'iron-session';
 import { cookies } from 'next/headers';
+import crypto from 'crypto';
 
 interface SessionData {
   state?: string;
@@ -28,6 +29,41 @@ export async function GET(request: Request) {
     },
   });
 
+  // Verify state with HMAC and expiry
+  const [statePayload, signature] = state.split('.');
+  if (!statePayload || !signature) {
+    return NextResponse.redirect(new URL('/error?message=Invalid state format', request.url));
+  }
+
+  const expectedHmac = crypto.createHmac('sha256', process.env.STATE_HMAC_SECRET as string);
+  expectedHmac.update(statePayload);
+  const expectedSignature = expectedHmac.digest('base64url');
+
+  if (signature !== expectedSignature) {
+    return NextResponse.redirect(new URL('/error?message=State signature mismatch', request.url));
+  }
+
+  let stateData;
+  try {
+    stateData = JSON.parse(Buffer.from(statePayload, 'base64url').toString());
+  } catch (error) {
+    console.error('Failed to decode state:', error);
+    return NextResponse.redirect(new URL('/error?message=Invalid state data', request.url));
+  }
+
+  // Check expiry
+  if (Date.now() > stateData.expiry) {
+    return NextResponse.redirect(new URL('/error?message=State expired', request.url));
+  }
+
+  // Allowlist return origins
+  const allowedOrigins = ['http://localhost:3000', 'https://nhl-fantasy-assistant.vercel.app'];
+  const returnTo = stateData.returnTo || '/dashboard';
+  const isAllowed = allowedOrigins.some(origin => returnTo.startsWith(origin)) || returnTo === '/dashboard';
+  if (!isAllowed) {
+    return NextResponse.redirect(new URL('/error?message=Invalid return URL', request.url));
+  }
+
   if (session.state !== state) {
     return NextResponse.redirect(new URL('/error?message=State mismatch', request.url));
   }
@@ -35,15 +71,6 @@ export async function GET(request: Request) {
   const codeVerifier = session.code_verifier;
   if (!codeVerifier) {
     return NextResponse.redirect(new URL('/error?message=Missing code verifier', request.url));
-  }
-
-  // Decode returnTo from state
-  let returnTo = '/dashboard';
-  try {
-    const stateData = JSON.parse(Buffer.from(state, 'base64url').toString());
-    returnTo = stateData.returnTo || '/dashboard';
-  } catch (error) {
-    console.error('Failed to decode state:', error);
   }
 
   // Exchange code for token

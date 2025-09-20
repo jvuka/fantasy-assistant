@@ -17,9 +17,16 @@ export async function GET(request: Request) {
   const redirectUri = process.env.YAHOO_REDIRECT_URI || 'https://nhl-fantasy-assistant.vercel.app/api/yahoo/callback';
   const scope = 'fspt-r';
 
-  // Encode returnTo in state
-  const stateData = { returnTo, nonce: Math.random().toString(36).substring(2, 15) };
-  const state = Buffer.from(JSON.stringify(stateData)).toString('base64url');
+  // Encode returnTo in state with expiry
+  const expiry = Date.now() + 10 * 60 * 1000; // 10 minutes from now
+  const stateData = { returnTo, nonce: Math.random().toString(36).substring(2, 15), expiry };
+  const statePayload = Buffer.from(JSON.stringify(stateData)).toString('base64url');
+
+  // Sign the state with HMAC
+  const hmac = crypto.createHmac('sha256', process.env.STATE_HMAC_SECRET as string);
+  hmac.update(statePayload);
+  const signature = hmac.digest('base64url');
+  const state = `${statePayload}.${signature}`;
 
   const code_verifier = crypto.randomBytes(32).toString('base64url');
   const code_challenge = crypto.createHash('sha256').update(code_verifier).digest('base64url');
