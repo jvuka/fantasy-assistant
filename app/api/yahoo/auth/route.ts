@@ -11,7 +11,7 @@ interface SessionData {
 
 export async function GET(request: Request) {
   const url = new URL(request.url);
-  const returnTo = url.searchParams.get('returnTo') || '/dashboard';
+  const returnTo = url.searchParams.get('returnTo') || '/';
 
   const clientId = process.env.YAHOO_CLIENT_ID;
   const redirectUri = process.env.YAHOO_REDIRECT_URI || 'https://nhl-fantasy-assistant.vercel.app/api/yahoo/callback';

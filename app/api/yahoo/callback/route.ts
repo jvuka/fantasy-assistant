@@ -58,8 +58,8 @@ export async function GET(request: Request) {
 
   // Allowlist return origins
   const allowedOrigins = ['http://localhost:3000', 'https://nhl-fantasy-assistant.vercel.app'];
-  const returnTo = stateData.returnTo || '/dashboard';
-  const isAllowed = allowedOrigins.some(origin => returnTo.startsWith(origin)) || returnTo === '/dashboard';
+  const returnTo = stateData.returnTo || '/';
+  const isAllowed = returnTo.startsWith('/') || allowedOrigins.some(origin => returnTo.startsWith(origin));
   if (!isAllowed) {
     return NextResponse.redirect(new URL('/error?message=Invalid return URL', request.url));
   }
