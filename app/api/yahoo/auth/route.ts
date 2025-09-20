@@ -6,13 +6,21 @@ import crypto from 'crypto';
 interface SessionData {
   state?: string;
   code_verifier?: string;
+  returnTo?: string;
 }
 
-export async function GET() {
+export async function GET(request: Request) {
+  const url = new URL(request.url);
+  const returnTo = url.searchParams.get('returnTo') || '/dashboard';
+
   const clientId = process.env.YAHOO_CLIENT_ID;
-  const redirectUri = 'https://nhl-fantasy-assistant.vercel.app/dashboard';
+  const redirectUri = process.env.YAHOO_REDIRECT_URI || 'https://nhl-fantasy-assistant.vercel.app/api/yahoo/callback';
   const scope = 'fspt-r';
-  const state = Math.random().toString(36).substring(2, 15);
+
+  // Encode returnTo in state
+  const stateData = { returnTo, nonce: Math.random().toString(36).substring(2, 15) };
+  const state = Buffer.from(JSON.stringify(stateData)).toString('base64url');
+
   const code_verifier = crypto.randomBytes(32).toString('base64url');
   const code_challenge = crypto.createHash('sha256').update(code_verifier).digest('base64url');
 
@@ -27,6 +35,7 @@ export async function GET() {
 
   session.state = state;
   session.code_verifier = code_verifier;
+  session.returnTo = returnTo;
   await session.save();
 
   const yahooAuthUrl = new URL('https://api.login.yahoo.com/oauth2/request_auth');

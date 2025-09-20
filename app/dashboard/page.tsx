@@ -40,7 +40,7 @@ export default async function DashboardPage({
     const tokenUrl = 'https://api.login.yahoo.com/oauth2/get_token';
     const client_id = process.env.YAHOO_CLIENT_ID;
     const client_secret = process.env.YAHOO_CLIENT_SECRET;
-    const redirect_uri = 'https://nhl-fantasy-assistant.vercel.app/dashboard';
+    const redirect_uri = process.env.YAHOO_REDIRECT_URI || 'https://nhl-fantasy-assistant.vercel.app/dashboard';
 
     if (!client_id || !client_secret || !redirect_uri) {
       throw new Error('Missing Yahoo environment variables');
