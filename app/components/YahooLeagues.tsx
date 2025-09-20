@@ -75,44 +75,34 @@ export default function YahooLeagues() {
     fetchTeam(leagueKey);
   };
 
-  console.log('Rendering decision: error present?', !!error);
-  if (error) {
-    console.log('Rendering error state with Connect Yahoo button');
-    return (
-      <div>
-        <p className="text-red-500">Could not fetch leagues. Please connect your Yahoo account.</p>
-        <a href="/api/yahoo/auth" className="block w-full text-center bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-          Connect Yahoo
-        </a>
-      </div>
-    );
-  }
-
-  console.log('Rendering decision: leagues loaded?', leagues.length > 0);
-  if (leagues.length === 0) {
-    console.log('Rendering loading state');
-    return <p>Loading leagues...</p>;
-  }
-
-  console.log('Rendering leagues list, selected league:', selectedLeague);
+  console.log('Rendering YahooLeagues component');
   return (
     <div>
-      <h2>Your Leagues</h2>
-      <select onChange={handleLeagueChange} value={selectedLeague || ''}>
-        <option value="" disabled>Select a league</option>
-        {leagues.map((league) => (
-          <option key={league.key} value={league.key}>
-            {league.name}
-          </option>
-        ))}
-      </select>
-      {team && (
+      <a href="/api/yahoo/auth" className="block w-full text-center bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mb-4">
+        Connect Yahoo
+      </a>
+      {error && <p className="text-red-500 mb-4">Could not fetch leagues. Please connect your Yahoo account.</p>}
+      {leagues.length > 0 && (
         <div>
-          <h3>Your Team</h3>
-          <p>ID: {team.id}</p>
-          <p>Name: {team.name}</p>
+          <h2>Your Leagues</h2>
+          <select onChange={handleLeagueChange} value={selectedLeague || ''}>
+            <option value="" disabled>Select a league</option>
+            {leagues.map((league) => (
+              <option key={league.key} value={league.key}>
+                {league.name}
+              </option>
+            ))}
+          </select>
+          {team && (
+            <div>
+              <h3>Your Team</h3>
+              <p>ID: {team.id}</p>
+              <p>Name: {team.name}</p>
+            </div>
+          )}
         </div>
       )}
+      {leagues.length === 0 && !error && <p>Loading leagues...</p>}
     </div>
   );
 }
