@@ -9,17 +9,12 @@ interface SessionData {
 }
 
 export async function GET() {
-  const clientId = process.env.NEXT_PUBLIC_YAHOO_CLIENT_ID;
-  let redirectUri = process.env.NEXT_PUBLIC_YAHOO_REDIRECT_URI || '';
+  const clientId = process.env.YAHOO_CLIENT_ID;
+  const redirectUri = 'https://nhl-fantasy-assistant.vercel.app/dashboard';
   const scope = 'fspt-r';
   const state = Math.random().toString(36).substring(2, 15);
   const code_verifier = crypto.randomBytes(32).toString('base64url');
   const code_challenge = crypto.createHash('sha256').update(code_verifier).digest('base64url');
-
-  // Ensure redirect URI ends with a trailing slash for Yahoo OAuth compatibility
-  if (redirectUri && !redirectUri.endsWith('/')) {
-    redirectUri += '/';
-  }
 
   const session = await getIronSession<SessionData>(cookies(), {
     password: process.env.SECRET_COOKIE_PASSWORD as string,
