@@ -14,3 +14,4 @@ build/
 # tests/coverage (optional)
 coverage/
 .vercel
+.env*.local

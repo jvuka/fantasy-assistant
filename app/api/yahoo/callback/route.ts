@@ -40,7 +40,12 @@ export async function GET(req: NextRequest) {
     const tokenUrl = 'https://api.login.yahoo.com/oauth2/get_token';
     const client_id = process.env.NEXT_PUBLIC_YAHOO_CLIENT_ID;
     const client_secret = process.env.YAHOO_CLIENT_SECRET;
-    const redirect_uri = process.env.NEXT_PUBLIC_YAHOO_REDIRECT_URI || '';
+    let redirect_uri = process.env.NEXT_PUBLIC_YAHOO_REDIRECT_URI || '';
+
+    // Ensure redirect URI ends with a trailing slash for Yahoo OAuth compatibility
+    if (redirect_uri && !redirect_uri.endsWith('/')) {
+      redirect_uri += '/';
+    }
 
     console.log('DEBUG: Environment variables - client_id:', client_id ? 'present' : 'missing', 'client_secret:', client_secret ? 'present' : 'missing', 'redirect_uri:', redirect_uri ? 'present' : 'missing');
 
