@@ -18,7 +18,7 @@ export async function GET(req: NextRequest) {
 
   try {
     const tokenUrl = 'https://api.login.yahoo.com/oauth2/get_token';
-    const client_id = process.env.YAHOO_CLIENT_ID;
+    const client_id = process.env.NEXT_PUBLIC_YAHOO_CLIENT_ID;
     const client_secret = process.env.YAHOO_CLIENT_SECRET;
     const redirect_uri = process.env.YAHOO_REDIRECT_URI;
 
