@@ -75,12 +75,17 @@ export default function YahooLeagues() {
     fetchTeam(leagueKey);
   };
 
+  const handleConnectYahoo = () => {
+    const origin = window.location.origin;
+    window.location.href = `/api/yahoo/auth?origin=${encodeURIComponent(origin)}`;
+  };
+
   console.log('Rendering YahooLeagues component');
   return (
     <div>
-      <a href="/api/yahoo/auth" className="block w-full text-center bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mb-4">
+      <button onClick={handleConnectYahoo} className="block w-full text-center bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mb-4">
         Connect Yahoo
-      </a>
+      </button>
       {error && <p className="text-red-500 mb-4">Could not fetch leagues. Please connect your Yahoo account.</p>}
       {leagues.length > 0 && (
         <div>
