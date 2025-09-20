@@ -32,27 +32,26 @@ export async function GET(req: NextRequest) {
   }
 
   try {
-    const response = await fetch(`https://fantasysports.yahooapis.com/fantasy/v2/users;use_login=1/games;game_keys=nhl/leagues;league_keys=${leagueKey}/teams`, {
+    const response = await fetch(`https://fantasysports.yahooapis.com/fantasy/v2/leagues;league_keys=${leagueKey}/teams`, {
       headers: {
         'Authorization': `Bearer ${access_token}`
       }
     });
 
     if (!response.ok) {
-      console.error('Failed to fetch team from Yahoo:', await response.text());
-      throw new Error('Failed to fetch team from Yahoo');
+      console.error('Failed to fetch teams from Yahoo:', await response.text());
+      throw new Error('Failed to fetch teams from Yahoo');
     }
 
     const xmlData = await response.text();
     const jsonData = await parseStringPromise(xmlData);
 
-    const team = jsonData.fantasy_content.users[0].user[1].games[0].game[1].leagues[0].league[1].teams[0].team[0];
-    const teamData = {
-      id: team.team_id[0],
-      name: team.name[0]
-    };
+    const teams = jsonData.fantasy_content.leagues[0].league[1].teams[0].team.map((t: any) => ({
+      id: t.team_id[0],
+      name: t.name[0]
+    }));
 
-    return NextResponse.json(teamData);
+    return NextResponse.json(teams);
   } catch (error) {
     console.error('Error fetching team:', error);
     const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred';

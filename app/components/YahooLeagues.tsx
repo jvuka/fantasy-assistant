@@ -17,7 +17,7 @@ interface Team {
 export default function YahooLeagues() {
   const [leagues, setLeagues] = useState<League[]>([]);
   const [selectedLeague, setSelectedLeague] = useState<string | null>(null);
-  const [team, setTeam] = useState<Team | null>(null);
+  const [teams, setTeams] = useState<Team[]>([]);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -26,7 +26,7 @@ export default function YahooLeagues() {
     if (storedLeagueKey) {
       console.log('Found stored league key:', storedLeagueKey);
       setSelectedLeague(storedLeagueKey);
-      fetchTeam(storedLeagueKey);
+      fetchTeams(storedLeagueKey);
     }
 
     console.log('Attempting to fetch leagues from /api/yahoo/leagues');
@@ -48,8 +48,8 @@ export default function YahooLeagues() {
       });
   }, []);
 
-  const fetchTeam = (leagueKey: string) => {
-    console.log('Attempting to fetch team for league:', leagueKey);
+  const fetchTeams = (leagueKey: string) => {
+    console.log('Attempting to fetch teams for league:', leagueKey);
     fetch(`/api/yahoo/team?leagueKey=${leagueKey}`)
       .then(async (res) => {
         if (!res.ok) {
@@ -59,20 +59,19 @@ export default function YahooLeagues() {
         return res.json();
       })
       .then((data) => {
-        console.log('Team API response:', data);
-        setTeam(data);
+        console.log('Teams API response:', data);
+        setTeams(data);
       })
       .catch((err) => {
-        console.error('Team fetch error:', err);
+        console.error('Teams fetch error:', err);
         setError(err.message);
       });
   };
 
-  const handleLeagueChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    const leagueKey = event.target.value;
+  const handleLeagueClick = (leagueKey: string) => {
     setSelectedLeague(leagueKey);
     localStorage.setItem('selectedLeagueKey', leagueKey);
-    fetchTeam(leagueKey);
+    fetchTeams(leagueKey);
   };
 
   const handleConnectYahoo = () => {
@@ -83,26 +82,43 @@ export default function YahooLeagues() {
   console.log('Rendering YahooLeagues component');
   return (
     <div>
-      <button onClick={handleConnectYahoo} className="block w-full text-center bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mb-4">
+      <button onClick={handleConnectYahoo} style={{ display: 'block', width: '100%', textAlign: 'center', backgroundColor: 'blue', color: 'white', padding: '8px 16px', border: 'none', borderRadius: '4px', marginBottom: '16px' }}>
         Connect Yahoo
       </button>
-      {error && <p className="text-red-500 mb-4">Could not fetch leagues. Please connect your Yahoo account.</p>}
+      {error && <p style={{ color: 'red', marginBottom: '16px' }}>Could not fetch leagues. Please connect your Yahoo account.</p>}
       {leagues.length > 0 && (
         <div>
           <h2>Your Leagues</h2>
-          <select onChange={handleLeagueChange} value={selectedLeague || ''}>
-            <option value="" disabled>Select a league</option>
+          <ul style={{ listStyle: 'none', padding: 0 }}>
             {leagues.map((league) => (
-              <option key={league.key} value={league.key}>
-                {league.name}
-              </option>
+              <li key={league.key} style={{ marginBottom: '8px' }}>
+                <button
+                  onClick={() => handleLeagueClick(league.key)}
+                  style={{
+                    backgroundColor: selectedLeague === league.key ? 'lightblue' : 'lightgray',
+                    border: 'none',
+                    padding: '8px 16px',
+                    borderRadius: '4px',
+                    cursor: 'pointer',
+                    width: '100%',
+                    textAlign: 'left'
+                  }}
+                >
+                  {league.name}
+                </button>
+              </li>
             ))}
-          </select>
-          {team && (
+          </ul>
+          {teams.length > 0 && (
             <div>
-              <h3>Your Team</h3>
-              <p>ID: {team.id}</p>
-              <p>Name: {team.name}</p>
+              <h3>Teams in League</h3>
+              <ul style={{ listStyle: 'none', padding: 0 }}>
+                {teams.map((team) => (
+                  <li key={team.id} style={{ marginBottom: '4px' }}>
+                    {team.name} (ID: {team.id})
+                  </li>
+                ))}
+              </ul>
             </div>
           )}
         </div>
