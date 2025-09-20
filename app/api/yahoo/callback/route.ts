@@ -22,9 +22,13 @@ export async function GET(req: NextRequest) {
     const client_secret = process.env.YAHOO_CLIENT_SECRET;
     const redirect_uri = process.env.YAHOO_REDIRECT_URI;
 
+    console.log('DEBUG: Environment variables - client_id:', client_id ? 'present' : 'missing', 'client_secret:', client_secret ? 'present' : 'missing', 'redirect_uri:', redirect_uri ? 'present' : 'missing');
+
     if (!client_id || !client_secret || !redirect_uri) {
       throw new Error('Missing Yahoo environment variables');
     }
+
+    console.log('DEBUG: Token exchange request - URL:', tokenUrl, 'Code:', code, 'Redirect URI:', redirect_uri);
 
     const response = await fetch(tokenUrl, {
       method: 'POST',
@@ -43,10 +47,14 @@ export async function GET(req: NextRequest) {
 
     const tokens = await response.json();
 
+    console.log('DEBUG: Token exchange response - Status:', response.status, 'Tokens received:', tokens);
+
     if (!response.ok) {
       console.error('Failed to fetch tokens:', tokens);
       throw new Error(tokens.error_description || 'Failed to fetch tokens');
     }
+
+    console.log('DEBUG: Creating session with password:', process.env.SECRET_COOKIE_PASSWORD ? 'present' : 'missing');
 
     const session = await getIronSession<SessionData>(cookies(), {
       password: process.env.SECRET_COOKIE_PASSWORD as string,
@@ -59,11 +67,16 @@ export async function GET(req: NextRequest) {
 
     session.access_token = tokens.access_token;
     session.refresh_token = tokens.refresh_token;
+
+    console.log('DEBUG: Session updated - Access token:', session.access_token ? 'set' : 'not set', 'Refresh token:', session.refresh_token ? 'set' : 'not set');
+
     await session.save();
+
+    console.log('DEBUG: Session saved successfully');
 
     return NextResponse.redirect(new URL('/dashboard', req.url));
   } catch (error) {
-    console.error('Error in Yahoo callback:', error);
+    console.error('DEBUG: Error in Yahoo callback:', error);
     const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred';
     return new NextResponse(errorMessage, { status: 500 });
   }
