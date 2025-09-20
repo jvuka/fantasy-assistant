@@ -1,5 +1,7 @@
 'use client';
 
+console.log('YahooLeagues component is being imported/rendered');
+
 import { useEffect, useState } from 'react';
 
 interface League {
