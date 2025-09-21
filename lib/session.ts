@@ -34,7 +34,8 @@ export async function getSession(): Promise<SessionData | null> {
 }
 
 export async function setSession(data: SessionData): Promise<void> {
-  const jwt = await new SignJWT(data)
+  const payload = Object.fromEntries(Object.entries(data).filter(([_, v]) => v !== undefined));
+  const jwt = await new SignJWT(payload)
     .setProtectedHeader({ alg: 'HS256' })
     .setIssuedAt()
     .setExpirationTime('1h') // 1 hour expiry
