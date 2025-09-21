@@ -41,6 +41,7 @@ export async function GET(req: NextRequest) {
     let data;
     try {
       data = await response.json();
+      console.log('Raw Yahoo response:', data);
       if (!data?.fantasy_content?.users) {
         throw new Error('Missing fantasy_content.users in response');
       }
