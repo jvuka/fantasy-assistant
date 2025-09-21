@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSession } from '../../../../lib/session';
-import { parseStringPromise } from 'xml2js';
 
 export async function GET(req: NextRequest) {
   const session = await getSession();
@@ -12,22 +11,23 @@ export async function GET(req: NextRequest) {
   }
 
   try {
-    const response = await fetch('https://fantasysports.yahooapis.com/fantasy/v2/users;use_login=1/games;game_keys=nhl/leagues', {
+    const response = await fetch('https://fantasysports.yahooapis.com/fantasy/v2/users;use_login=1/games;game_keys=nhl/leagues?format=json', {
       headers: {
         'Authorization': `Bearer ${access_token}`,
       },
     });
 
     if (!response.ok) {
-      throw new Error('Failed to fetch leagues');
+      return NextResponse.json({ error: response.statusText, status: response.status }, { status: response.status });
     }
 
-    const data = await response.text();
-    return new NextResponse(data, {
-      headers: {
-        'Content-Type': 'application/xml',
-      },
-    });
+    try {
+      const data = await response.json();
+      return NextResponse.json(data);
+    } catch (parseError) {
+      console.error('Error parsing JSON:', parseError);
+      return NextResponse.json({ error: 'Failed to parse JSON' }, { status: 500 });
+    }
   } catch (error) {
     console.error('Error fetching leagues:', error);
     return NextResponse.json({ error: 'Failed to fetch leagues' }, { status: 500 });
