@@ -1,30 +1,20 @@
-import { NextResponse } from 'next/server';
-import { getIronSession } from 'iron-session';
-import { cookies } from 'next/headers';
+import { NextRequest, NextResponse } from 'next/server';
+import { getSession } from '../../../lib/session';
+import { parseStringPromise } from 'xml2js';
 
-interface SessionData {
-  access_token?: string;
-}
+export async function GET(req: NextRequest) {
+  const session = await getSession();
 
-export async function GET() {
-  const session = await getIronSession<SessionData>(cookies(), {
-    password: process.env.SECRET_COOKIE_PASSWORD as string,
-    cookieName: 'fantasy-assistant-session',
-    cookieOptions: {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-    },
-  });
+  const access_token = session?.access_token;
 
-  const accessToken = session.access_token;
-  if (!accessToken) {
-    return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
+  if (!access_token) {
+    return new NextResponse('Not authenticated', { status: 401 });
   }
 
   try {
     const response = await fetch('https://fantasysports.yahooapis.com/fantasy/v2/users;use_login=1/games;game_keys=nhl/leagues', {
       headers: {
-        'Authorization': `Bearer ${accessToken}`,
+        'Authorization': `Bearer ${access_token}`,
       },
     });
 

@@ -1,31 +1,28 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import YahooLeagues from './components/YahooLeagues';
-
 export default function Home() {
-  const [authenticated, setAuthenticated] = useState(false);
+  const handleConnectYahoo = () => {
+    window.location.href = '/api/yahoo/auth';
+  };
 
-  useEffect(() => {
-    fetch('/api/auth-status')
-      .then(res => res.json())
-      .then(data => setAuthenticated(data.authenticated))
-      .catch(err => console.error(err));
-  }, []);
+  const handleLoadLeagues = async () => {
+    try {
+      const response = await fetch('/api/yahoo/leagues');
+      const data = await response.json();
+      console.log('Leagues:', data);
+      alert('Leagues loaded, check console');
+    } catch (error) {
+      console.error('Error loading leagues:', error);
+      alert('Error loading leagues');
+    }
+  };
 
   return (
     <main style={{padding: 24}}>
       <h1>Fantasy Assistant</h1>
-      {authenticated ? (
-        <YahooLeagues />
-      ) : (
-        <>
-          <p>Connect to Yahoo Fantasy Sports</p>
-          <a href="/api/yahoo/auth" style={{display: 'inline-block', padding: '10px 20px', backgroundColor: '#007bff', color: 'white', textDecoration: 'none', borderRadius: '5px'}}>
-            Connect with Yahoo
-          </a>
-        </>
-      )}
+      <p>Next.js is set up and running.</p>
+      <button onClick={handleConnectYahoo}>Connect Yahoo</button>
+      <button onClick={handleLoadLeagues}>Load My Leagues</button>
     </main>
   );
 }

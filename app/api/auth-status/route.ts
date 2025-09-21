@@ -1,20 +1,9 @@
 import { NextResponse } from 'next/server';
-import { getIronSession } from 'iron-session';
-import { cookies } from 'next/headers';
-
-interface SessionData {
-  access_token?: string;
-}
+import { getSession } from '../../../lib/session';
 
 export async function GET() {
-  const session = await getIronSession<SessionData>(cookies(), {
-    password: process.env.SECRET_COOKIE_PASSWORD as string,
-    cookieName: 'fantasy-assistant-session',
-    cookieOptions: {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-    },
-  });
+  const session = await getSession();
+  const isAuthenticated = !!session?.access_token;
 
-  return NextResponse.json({ authenticated: !!session.access_token });
+  return NextResponse.json({ authenticated: isAuthenticated });
 }
