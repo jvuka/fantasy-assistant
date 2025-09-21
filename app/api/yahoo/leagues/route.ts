@@ -1,24 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getIronSession } from 'iron-session';
-import { cookies } from 'next/headers';
+import { getSession } from '../../../lib/session';
 import { parseStringPromise } from 'xml2js';
 
-interface SessionData {
-  access_token?: string;
-  refresh_token?: string;
-}
-
 export async function GET(req: NextRequest) {
-  const session = await getIronSession<SessionData>(cookies(), {
-    password: process.env.SECRET_COOKIE_PASSWORD as string,
-    cookieName: 'fantasy-assistant-session',
-    cookieOptions: {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-    },
-  });
+  const session = await getSession();
 
-  const access_token = session.access_token;
+  const access_token = session?.access_token;
 
   if (!access_token) {
     return new NextResponse('Not authenticated', { status: 401 });
