@@ -23,7 +23,10 @@ export async function GET(req: NextRequest) {
 
     try {
       const data = await response.json();
-      return NextResponse.json(data);
+      // Extract user key (it's the actual user ID, not 'user')
+      const userKey = Object.keys(data.fantasy_content.users)[0];
+      const leagues = data.fantasy_content.users[userKey].games.nhl.leagues;
+      return NextResponse.json(leagues);
     } catch (parseError) {
       console.error('Error parsing JSON:', parseError);
       return NextResponse.json({ error: 'Failed to parse JSON' }, { status: 500 });
