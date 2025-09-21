@@ -36,11 +36,17 @@ export async function GET(req: NextRequest) {
       if (!userKey) {
         throw new Error('No user key found');
       }
-      const leagues = data.fantasy_content.users[userKey]?.games?.['0']?.game?.[0]?.leagues?.league;
-      if (!leagues) {
-        throw new Error('No leagues found in response');
+      const nhlGame = data.fantasy_content.users[userKey]?.games?.['0']?.game?.[0];
+      const leagues = nhlGame?.leagues;
+      const result = [];
+      for (const key of Object.keys(leagues || {})) {
+        if (key === 'count') continue;
+        const leagueData = leagues[key];
+        const league = leagueData?.league?.[0];
+        if (league) result.push({ league_key: league.league_key, name: league.name, season: league.season });
       }
-      return NextResponse.json(leagues);
+      if (result.length === 0) throw new Error('No leagues found in response');
+      return NextResponse.json(result);
     } catch (error) {
       console.error('Error parsing leagues data:', error);
       return NextResponse.json({ error: 'Failed to parse leagues data', details: error instanceof Error ? error.message : 'Unknown error' }, { status: 500 });
