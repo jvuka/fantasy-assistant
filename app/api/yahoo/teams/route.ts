@@ -34,6 +34,10 @@ export async function GET(req: NextRequest) {
 
     const data = await response.json();
 
+    if (!data.fantasy_content) {
+      return NextResponse.json({ error: 'Invalid response from Yahoo API' }, { status: 500 });
+    }
+
     // Assuming the structure: data.fantasy_content.leagues.league[0].teams.team
     const league = data.fantasy_content.leagues.league;
     const teamsData = league.teams?.team || [];

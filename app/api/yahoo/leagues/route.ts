@@ -27,6 +27,9 @@ export async function GET(req: NextRequest) {
 
     try {
       const data = await response.json();
+      if (!data.fantasy_content) {
+        return NextResponse.json({ error: 'Invalid response from Yahoo API' }, { status: 500 });
+      }
       // Extract user key (it's the actual user ID, not 'user')
       const userKey = Object.keys(data.fantasy_content.users)[0];
       const leagues = data.fantasy_content.users[userKey].games.nhl.leagues;
