@@ -33,6 +33,7 @@ export async function GET(req: NextRequest) {
     }
 
     const data = await response.json();
+    console.log('Yahoo API response:', JSON.stringify(data));
 
     if (!data.fantasy_content) {
       return NextResponse.json({ error: 'Invalid response from Yahoo API' }, { status: 500 });
