@@ -40,7 +40,10 @@ export async function GET(req: NextRequest) {
     }
 
     // Assuming the structure: data.fantasy_content.leagues.league[0].teams.team
-    const league = data.fantasy_content.leagues.league;
+    const league = data.fantasy_content.leagues["0"].league;
+
+    if (!league.teams) return Response.json([]);
+
     const teamsData = league.teams?.team || [];
 
     // Ensure teamsData is an array
