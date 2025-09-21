@@ -27,13 +27,12 @@ export async function GET(req: NextRequest) {
 
     try {
       const data = await response.json();
-      console.log('Yahoo response:', JSON.stringify(data));
       if (!data.fantasy_content) {
         return NextResponse.json({ error: 'Invalid response from Yahoo API' }, { status: 500 });
       }
       // Extract user key (it's the actual user ID, not 'user')
       const userKey = Object.keys(data.fantasy_content.users)[0];
-      const leagues = data.fantasy_content.users[userKey].games.nhl.leagues;
+      const leagues = data.fantasy_content.users[userKey].games.nhl.leagues.league;
       return NextResponse.json(leagues);
     } catch (parseError) {
       console.error('Error parsing JSON:', parseError);
