@@ -28,6 +28,7 @@ export default function Home() {
         return;
       }
       const data = await response.json();
+      if (!Array.isArray(data)) throw new Error('Invalid data: expected array, got ' + typeof data);
       // Assuming structure: data.fantasy_content.users.user.games.game.leagues.league
       const leaguesData = data.fantasy_content.users.user.games.game.leagues.league;
       const leaguesArray = Array.isArray(leaguesData) ? leaguesData : [leaguesData];
@@ -45,6 +46,7 @@ export default function Home() {
         return;
       }
       const data = await response.json();
+      if (!Array.isArray(data)) throw new Error('Invalid data: expected array, got ' + typeof data);
       setTeams(data);
     } catch (error) {
       console.error('Error loading teams:', error);
