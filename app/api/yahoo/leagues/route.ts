@@ -7,7 +7,9 @@ function parseTeams(teams: any) {
     if (key === 'count') continue;
     const teamData = teams[key];
     const team = teamData?.team?.[0];
-    if (team) result.push({ team_key: team.team_key, name: team.name });
+    const managerData = teamData?.team?.[1]?.managers?.["0"]?.manager?.[0];
+    const manager = managerData?.nickname || 'Unknown';
+    if (team) result.push({ team_key: team.team_key, name: team.name, manager });
   }
   return result;
 }
@@ -56,7 +58,7 @@ export async function GET(req: NextRequest) {
         if (key === 'count') continue;
         const leagueData = leagues[key];
         const league = leagueData?.league?.[0];
-        if (league) result.push({ league_key: league.league_key, name: league.name, season: league.season, teams: parseTeams(league.teams) });
+        if (league) result.push({ league_key: league.league_key, name: league.name, season: league.season, teams: parseTeams(leagueData.league[1].teams) });
       }
       if (result.length === 0) throw new Error('No leagues found in response');
       return NextResponse.json(result);
