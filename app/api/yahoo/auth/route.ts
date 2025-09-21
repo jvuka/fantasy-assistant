@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
-import { getSession, setSession } from '../../../lib/session';
-import { generateCodeVerifier, generateCodeChallenge } from '../../../lib/yahoo/pkce';
+import { getSession, setSession } from '../../../../lib/session';
+import { generateCodeVerifier, generateCodeChallenge } from '../../../../lib/yahoo/pkce';
 import crypto from 'crypto';
 
 export async function GET(request: Request) {

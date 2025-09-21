@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getSession } from '../../../lib/session';
+import { getSession } from '../../../../lib/session';
 import { parseStringPromise } from 'xml2js';
 
 export async function GET(req: NextRequest) {

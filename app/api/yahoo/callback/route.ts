@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
-import { getSession, setSession } from '../../../lib/session';
-import { exchangeCodeForTokens } from '../../../lib/yahoo/tokens';
+import { getSession, setSession } from '../../../../lib/session';
+import { exchangeCodeForTokens } from '../../../../lib/yahoo/tokens';
 
 export async function GET(request: Request) {
   const url = new URL(request.url);
