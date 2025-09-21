@@ -41,23 +41,23 @@ export async function GET(req: NextRequest) {
     }
 
     // Assuming the structure: data.fantasy_content.leagues.league[0].teams.team
-    console.log('Accessing league:', data.fantasy_content.leagues.league);
+    console.log('league:', data.fantasy_content?.leagues?.[league_key]?.league);
     const league = data.fantasy_content.leagues.league;
-    console.log('teamsData:', league.teams?.team);
+    console.log('teamsData:', data.fantasy_content?.leagues?.[league_key]?.league?.teams);
     const teamsData = league.teams?.team || [];
 
     // Ensure teamsData is an array
     const teamsArray = Array.isArray(teamsData) ? teamsData : [teamsData];
 
-    const teams = teamsArray.map((team: any) => ({
+    const result = teamsArray.map((team: any) => ({
       team_key: team.team_key,
       name: team.name,
       manager: team.managers?.manager?.nickname || 'Unknown',
     }));
 
-    console.log('Parsed teams:', teams);
+    console.log('Parsed teams:', result);
 
-    return NextResponse.json(teams);
+    return NextResponse.json(result);
   } catch (error) {
     console.error('Error fetching:', error, error instanceof Error ? error.stack : 'No stack', 'Partial data:', data ? JSON.stringify(data).slice(0, 500) : 'No data');
     return NextResponse.json({ error: 'Failed to fetch teams' }, { status: 500 });

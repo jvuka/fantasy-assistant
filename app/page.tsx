@@ -46,6 +46,7 @@ export default function Home() {
         return;
       }
       const data = await response.json();
+      console.log('Teams response status:', response.status, 'data:', data);
       setTeams(data);
     } catch (error) {
       console.error('Error loading teams:', error);
