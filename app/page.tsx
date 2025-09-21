@@ -22,17 +22,11 @@ export default function Home() {
 
   const handleLoadLeagues = async () => {
     try {
-      const response = await fetch('/api/yahoo/leagues');
-      if (response.status === 401) {
-        setIsConnected(false);
-        return;
-      }
-      const data = await response.json();
+      const res = await fetch('/api/yahoo/leagues');
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to load leagues');
       if (!Array.isArray(data)) throw new Error('Invalid data: expected array, got ' + typeof data);
-      // Assuming structure: data.fantasy_content.users.user.games.game.leagues.league
-      const leaguesData = data.fantasy_content.users.user.games.game.leagues.league;
-      const leaguesArray = Array.isArray(leaguesData) ? leaguesData : [leaguesData];
-      setLeagues(leaguesArray);
+      setLeagues(data);
     } catch (error) {
       console.error('Error loading leagues:', error);
     }
