@@ -4,7 +4,8 @@ import { useState, useEffect } from 'react';
 
 export default function Home() {
   const [isConnected, setIsConnected] = useState(false);
-  const [leagues, setLeagues] = useState(null);
+  const [leagues, setLeagues] = useState<any[]>([]);
+  const [teams, setTeams] = useState<any[]>([]);
 
   useEffect(() => {
     fetch('/api/auth-status')
@@ -23,9 +24,22 @@ export default function Home() {
     try {
       const response = await fetch('/api/yahoo/leagues');
       const data = await response.json();
-      setLeagues(data);
+      // Assuming structure: data.fantasy_content.users.user.games.game.leagues.league
+      const leaguesData = data.fantasy_content.users.user.games.game.leagues.league;
+      const leaguesArray = Array.isArray(leaguesData) ? leaguesData : [leaguesData];
+      setLeagues(leaguesArray);
     } catch (error) {
       console.error('Error loading leagues:', error);
+    }
+  };
+
+  const handleLoadTeams = async (league_key: string) => {
+    try {
+      const response = await fetch(`/api/yahoo/teams?league_key=${league_key}`);
+      const data = await response.json();
+      setTeams(data);
+    } catch (error) {
+      console.error('Error loading teams:', error);
     }
   };
 
@@ -38,7 +52,28 @@ export default function Home() {
       ) : (
         <>
           <button onClick={handleLoadLeagues}>Load My Leagues</button>
-          {leagues && <pre>{JSON.stringify(leagues, null, 2)}</pre>}
+          {leagues.length > 0 && (
+            <div>
+              <h2>Leagues</h2>
+              {leagues.map((league: any) => (
+                <button key={league.league_key} onClick={() => handleLoadTeams(league.league_key)}>
+                  {league.name}
+                </button>
+              ))}
+            </div>
+          )}
+          {teams.length > 0 && (
+            <div>
+              <h2>Teams</h2>
+              <ul>
+                {teams.map((team: any) => (
+                  <li key={team.team_key}>
+                    {team.name} - {team.manager}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
         </>
       )}
     </main>
