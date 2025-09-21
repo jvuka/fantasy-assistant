@@ -32,20 +32,6 @@ export default function Home() {
     }
   };
 
-  const handleLoadTeams = async (league_key: string) => {
-    try {
-      const response = await fetch(`/api/yahoo/teams?league_key=${league_key}`);
-      if (response.status === 401) {
-        setIsConnected(false);
-        return;
-      }
-      const data = await response.json();
-      if (!Array.isArray(data)) throw new Error('Invalid data: expected array, got ' + typeof data);
-      setTeams(data);
-    } catch (error) {
-      console.error('Error loading teams:', error);
-    }
-  };
 
   return (
     <main style={{padding: 24}}>
@@ -60,7 +46,7 @@ export default function Home() {
             <div>
               <h2>Leagues</h2>
               {leagues.map((league: any) => (
-                <button key={league.league_key} onClick={() => handleLoadTeams(league.league_key)}>
+                <button key={league.league_key} onClick={() => setTeams(league.teams)}>
                   {league.name}
                 </button>
               ))}

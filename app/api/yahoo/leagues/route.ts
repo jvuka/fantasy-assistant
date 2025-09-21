@@ -1,6 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSession } from '../../../../lib/session';
 
+function parseTeams(teams: any) {
+  const result = [];
+  for (const key of Object.keys(teams || {})) {
+    if (key === 'count') continue;
+    const teamData = teams[key];
+    const team = teamData?.team?.[0];
+    if (team) result.push({ team_key: team.team_key, name: team.name });
+  }
+  return result;
+}
+
 export async function GET(req: NextRequest) {
   const session = await getSession();
 
@@ -15,7 +26,7 @@ export async function GET(req: NextRequest) {
   }
 
   try {
-    const response = await fetch('https://fantasysports.yahooapis.com/fantasy/v2/users;use_login=1/games;game_keys=nhl/leagues?format=json', {
+    const response = await fetch('https://fantasysports.yahooapis.com/fantasy/v2/users;use_login=1/games;game_keys=nhl/leagues;out=teams?format=json', {
       headers: {
         'Authorization': `Bearer ${access_token}`,
       },
@@ -45,7 +56,7 @@ export async function GET(req: NextRequest) {
         if (key === 'count') continue;
         const leagueData = leagues[key];
         const league = leagueData?.league?.[0];
-        if (league) result.push({ league_key: league.league_key, name: league.name, season: league.season });
+        if (league) result.push({ league_key: league.league_key, name: league.name, season: league.season, teams: parseTeams(league.teams) });
       }
       if (result.length === 0) throw new Error('No leagues found in response');
       return NextResponse.json(result);
