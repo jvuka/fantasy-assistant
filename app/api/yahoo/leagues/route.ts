@@ -28,16 +28,22 @@ export async function GET(req: NextRequest) {
     try {
       const data = await response.json();
       console.log('Yahoo API response:', JSON.stringify(data));
-      if (!data.fantasy_content) {
-        return NextResponse.json({ error: 'Invalid response from Yahoo API' }, { status: 500 });
+      if (!data?.fantasy_content?.users) {
+        throw new Error('Missing fantasy_content.users in response');
       }
       // Extract user key (it's the actual user ID, not 'user')
       const userKey = Object.keys(data.fantasy_content.users)[0];
-      const leagues = data.fantasy_content.users[userKey].games['0'].game[0].leagues.league;
+      if (!userKey) {
+        throw new Error('No user key found');
+      }
+      const leagues = data.fantasy_content.users[userKey]?.games?.['0']?.game?.[0]?.leagues?.league;
+      if (!leagues) {
+        throw new Error('No leagues found in response');
+      }
       return NextResponse.json(leagues);
-    } catch (parseError) {
-      console.error('Error parsing JSON:', parseError);
-      return NextResponse.json({ error: 'Failed to parse JSON' }, { status: 500 });
+    } catch (error) {
+      console.error('Error parsing leagues data:', error);
+      return NextResponse.json({ error: 'Failed to parse leagues data', details: error instanceof Error ? error.message : 'Unknown error' }, { status: 500 });
     }
   } catch (error) {
     console.error('Error fetching leagues:', error);
