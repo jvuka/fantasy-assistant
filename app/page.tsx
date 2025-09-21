@@ -28,6 +28,7 @@ export default function Home() {
         return;
       }
       const data = await response.json();
+      console.log('Leagues response status:', response.status, 'data:', data);
       // Assuming structure: data.fantasy_content.users.user.games.game.leagues.league
       const leaguesData = data.fantasy_content.users.user.games.game.leagues.league;
       const leaguesArray = Array.isArray(leaguesData) ? leaguesData : [leaguesData];
