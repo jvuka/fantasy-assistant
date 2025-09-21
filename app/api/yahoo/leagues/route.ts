@@ -25,17 +25,20 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: response.statusText, status: response.status }, { status: response.status });
     }
 
+    let data;
     try {
-      const data = await response.json();
-      console.log('Yahoo API response:', JSON.stringify(data));
+      data = await response.json();
+      console.log('Full Yahoo API data:', JSON.stringify(data, null, 2));
       if (!data?.fantasy_content?.users) {
         throw new Error('Missing fantasy_content.users in response');
       }
       // Extract user key (it's the actual user ID, not 'user')
       const userKey = Object.keys(data.fantasy_content.users)[0];
+      console.log('userKey:', userKey);
       if (!userKey) {
         throw new Error('No user key found');
       }
+      console.log('Accessing nhlGame:', data.fantasy_content.users[userKey]?.games?.['0']);
       const nhlGame = data.fantasy_content.users[userKey]?.games?.['0']?.game?.[0];
       const leagues = nhlGame?.leagues;
       const result = [];
@@ -45,10 +48,11 @@ export async function GET(req: NextRequest) {
         const league = leagueData?.league?.[0];
         if (league) result.push({ league_key: league.league_key, name: league.name, season: league.season });
       }
+      console.log('Parsed leagues:', result);
       if (result.length === 0) throw new Error('No leagues found in response');
       return NextResponse.json(result);
     } catch (error) {
-      console.error('Error parsing leagues data:', error);
+      console.error('Error parsing:', error, error instanceof Error ? error.stack : 'No stack', 'Partial data:', data ? JSON.stringify(data).slice(0, 500) : 'No data');
       return NextResponse.json({ error: 'Failed to parse leagues data', details: error instanceof Error ? error.message : 'Unknown error' }, { status: 500 });
     }
   } catch (error) {
