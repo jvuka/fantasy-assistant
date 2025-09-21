@@ -35,7 +35,9 @@ export async function GET(req: NextRequest) {
       // Extract user key (it's the actual user ID, not 'user')
       const userKey = Object.keys(data.fantasy_content.users)[0];
       console.log('userKey:', userKey);
-      const games = data.fantasy_content.users[userKey]?.games;
+      const userData = data.fantasy_content.users[userKey].user[1];
+      console.log('userData:', !!userData);
+      const games = userData.games;
       if (!userKey) {
         throw new Error('No user key found');
       }
