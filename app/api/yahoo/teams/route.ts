@@ -4,7 +4,11 @@ import { getSession } from '../../../../lib/session';
 export async function GET(req: NextRequest) {
   const session = await getSession();
 
-  const access_token = session?.access_token;
+  if (!session || !session.expires_at || Date.now() > session.expires_at) {
+    return NextResponse.json({ error: "Token expired, please login again" }, { status: 401 });
+  }
+
+  const access_token = session.access_token;
 
   if (!access_token) {
     return new NextResponse('Not authenticated', { status: 401 });

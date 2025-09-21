@@ -29,6 +29,7 @@ export async function GET(request: Request) {
     await setSession({
       access_token: tokenData.access_token,
       refresh_token: tokenData.refresh_token,
+      expires_at: Date.now() + (tokenData.expires_in * 1000),
       returnTo: session.returnTo || '/',
     });
 

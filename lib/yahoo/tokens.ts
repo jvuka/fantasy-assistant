@@ -2,7 +2,7 @@ export async function exchangeCodeForTokens(
   code: string,
   codeVerifier: string,
   redirectUri: string
-): Promise<{ access_token: string; refresh_token: string }> {
+): Promise<{ access_token: string; refresh_token: string; expires_in: number }> {
   const response = await fetch('https://api.login.yahoo.com/oauth2/get_token', {
     method: 'POST',
     headers: {

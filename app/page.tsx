@@ -23,6 +23,10 @@ export default function Home() {
   const handleLoadLeagues = async () => {
     try {
       const response = await fetch('/api/yahoo/leagues');
+      if (response.status === 401) {
+        setIsConnected(false);
+        return;
+      }
       const data = await response.json();
       // Assuming structure: data.fantasy_content.users.user.games.game.leagues.league
       const leaguesData = data.fantasy_content.users.user.games.game.leagues.league;
@@ -36,6 +40,10 @@ export default function Home() {
   const handleLoadTeams = async (league_key: string) => {
     try {
       const response = await fetch(`/api/yahoo/teams?league_key=${league_key}`);
+      if (response.status === 401) {
+        setIsConnected(false);
+        return;
+      }
       const data = await response.json();
       setTeams(data);
     } catch (error) {

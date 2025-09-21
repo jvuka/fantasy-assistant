@@ -14,6 +14,7 @@ export interface SessionData {
   returnTo?: string;
   access_token?: string;
   refresh_token?: string;
+  expires_at?: number;
 }
 
 export async function getSession(): Promise<SessionData | null> {
