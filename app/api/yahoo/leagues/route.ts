@@ -32,7 +32,7 @@ export async function GET(req: NextRequest) {
       }
       // Extract user key (it's the actual user ID, not 'user')
       const userKey = Object.keys(data.fantasy_content.users)[0];
-      const leagues = data.fantasy_content.users[userKey].games.nhl.leagues.league;
+      const leagues = data.fantasy_content.users[userKey].games['0'].game[0].leagues.league;
       return NextResponse.json(leagues);
     } catch (parseError) {
       console.error('Error parsing JSON:', parseError);
