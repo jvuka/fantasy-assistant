@@ -35,11 +35,12 @@ export async function GET(req: NextRequest) {
       // Extract user key (it's the actual user ID, not 'user')
       const userKey = Object.keys(data.fantasy_content.users)[0];
       console.log('userKey:', userKey);
+      const games = data.fantasy_content.users[userKey]?.games;
       if (!userKey) {
         throw new Error('No user key found');
       }
-      console.log('Accessing nhlGame:', data.fantasy_content.users[userKey]?.games?.['0']);
-      const nhlGame = data.fantasy_content.users[userKey]?.games?.['0']?.game?.[0];
+      console.log('Accessing nhlGame:', games?.['0']?.game?.[1]);
+      const nhlGame = games['0'].game[1];
       const leagues = nhlGame?.leagues;
       const result = [];
       for (const key of Object.keys(leagues || {})) {
