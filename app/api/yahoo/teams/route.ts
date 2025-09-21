@@ -34,16 +34,13 @@ export async function GET(req: NextRequest) {
     }
 
     data = await response.json();
-    console.log('Full Yahoo API data:', JSON.stringify(data, null, 2));
 
     if (!data.fantasy_content) {
       return NextResponse.json({ error: 'Invalid response from Yahoo API' }, { status: 500 });
     }
 
     // Assuming the structure: data.fantasy_content.leagues.league[0].teams.team
-    console.log('league:', data.fantasy_content?.leagues?.[league_key]?.league);
     const league = data.fantasy_content.leagues.league;
-    console.log('teamsData:', data.fantasy_content?.leagues?.[league_key]?.league?.teams);
     const teamsData = league.teams?.team || [];
 
     // Ensure teamsData is an array
@@ -54,8 +51,6 @@ export async function GET(req: NextRequest) {
       name: team.name,
       manager: team.managers?.manager?.nickname || 'Unknown',
     }));
-
-    console.log('Parsed teams:', result);
 
     return NextResponse.json(result);
   } catch (error) {

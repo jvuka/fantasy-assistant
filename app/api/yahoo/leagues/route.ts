@@ -28,20 +28,16 @@ export async function GET(req: NextRequest) {
     let data;
     try {
       data = await response.json();
-      console.log('Full Yahoo API data:', JSON.stringify(data, null, 2));
       if (!data?.fantasy_content?.users) {
         throw new Error('Missing fantasy_content.users in response');
       }
       // Extract user key (it's the actual user ID, not 'user')
       const userKey = Object.keys(data.fantasy_content.users)[0];
-      console.log('userKey:', userKey);
       const userData = data.fantasy_content.users[userKey].user[1];
-      console.log('userData:', !!userData);
       const games = userData.games;
       if (!userKey) {
         throw new Error('No user key found');
       }
-      console.log('Accessing nhlGame:', games?.['0']?.game?.[1]);
       const nhlGame = games['0'].game[1];
       const leagues = nhlGame?.leagues;
       const result = [];
@@ -51,7 +47,6 @@ export async function GET(req: NextRequest) {
         const league = leagueData?.league?.[0];
         if (league) result.push({ league_key: league.league_key, name: league.name, season: league.season });
       }
-      console.log('Parsed leagues:', result);
       if (result.length === 0) throw new Error('No leagues found in response');
       return NextResponse.json(result);
     } catch (error) {
