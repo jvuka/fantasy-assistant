@@ -6,6 +6,7 @@ export default function Home() {
   const [isConnected, setIsConnected] = useState(false);
   const [leagues, setLeagues] = useState<any[]>([]);
   const [teams, setTeams] = useState<any[]>([]);
+  const [roster, setRoster] = useState<any[]>([]);
 
   useEffect(() => {
     fetch('/api/auth-status')
@@ -44,6 +45,18 @@ export default function Home() {
     }
   };
 
+  const loadRoster = async (teamKey: string) => {
+    try {
+      const res = await fetch(`/api/yahoo/roster/${teamKey}`);
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to load roster');
+      if (!Array.isArray(data)) throw new Error('Invalid data: expected array');
+      setRoster(data);
+    } catch (error) {
+      console.error('Error loading roster:', error);
+    }
+  };
+
 
   return (
     <main style={{padding: 24}}>
@@ -69,11 +82,40 @@ export default function Home() {
               <h2>Teams</h2>
               <ul>
                 {teams.map((team: any) => (
-                  <li key={team.team_key}>
+                  <li key={team.team_key} onClick={() => loadRoster(team.team_key)} style={{cursor: 'pointer'}}>
                     {team.name} - {team.manager}
                   </li>
                 ))}
               </ul>
+            </div>
+          )}
+          {roster.length > 0 && (
+            <div>
+              <h2>Roster</h2>
+              <table>
+                <thead>
+                  <tr>
+                    <th>Player Name</th>
+                    <th>Position</th>
+                    <th>NHL Team</th>
+                    <th>Points</th>
+                    <th>Goals</th>
+                    <th>Assists</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {roster.map((player: any, index: number) => (
+                    <tr key={index}>
+                      <td>{player.name}</td>
+                      <td>{player.position}</td>
+                      <td>{player.nhl_team}</td>
+                      <td>{player.points}</td>
+                      <td>{player.goals}</td>
+                      <td>{player.assists}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           )}
         </>
