@@ -7,7 +7,7 @@ function parseTeams(teams: any) {
     const teamArray = teams[key].team[0];
     const team_key = teamArray[0]?.team_key;
     const name = teamArray[2]?.name;
-    const manager = teamArray[25]?.managers?.[0]?.manager?.nickname || 'Unknown';
+    const manager = teamArray[23]?.managers?.[0]?.manager?.nickname || 'Unknown';
     if (team_key && name) result.push({ team_key, name, manager });
   }
   return result;
