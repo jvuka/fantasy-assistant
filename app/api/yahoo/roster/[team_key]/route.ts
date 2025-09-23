@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getSession } from '../../../../lib/session';
+import { getSession } from '../../../../../lib/session';
 
 export async function GET(req: NextRequest, { params }: { params: { team_key: string } }) {
   const session = await getSession();
