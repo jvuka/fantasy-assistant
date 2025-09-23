@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getSession } from '../../../../lib/session';
+import { getSession } from '../../../../../lib/session';
 
 function parseTeams(teams: any) {
   const result = [];
