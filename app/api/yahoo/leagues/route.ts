@@ -3,13 +3,12 @@ import { getSession } from '../../../../lib/session';
 
 function parseTeams(teams: any) {
   const result = [];
-  for (const key of Object.keys(teams || {})) {
-    if (key === 'count') continue;
-    const teamData = teams[key];
-    const team = teamData?.team?.[0];
-    const managerData = teamData?.team?.[1]?.managers?.["0"]?.manager?.[0];
-    const manager = managerData?.nickname || 'Unknown';
-    if (team) result.push({ team_key: team.team_key, name: team.name, manager });
+  for (const key of Object.keys(teams || {}).filter(key => key !== 'count')) {
+    const teamArray = teams[key].team[0];
+    const team_key = teamArray[0]?.team_key;
+    const name = teamArray[2]?.name;
+    const manager = teamArray[25]?.managers?.[0]?.manager?.nickname || 'Unknown';
+    if (team_key && name) result.push({ team_key, name, manager });
   }
   return result;
 }
@@ -56,8 +55,7 @@ export async function GET(req: NextRequest) {
       const nhlGame = games['0'].game[1];
       const leagues = nhlGame?.leagues;
       const result = [];
-      for (const key of Object.keys(leagues || {})) {
-        if (key === 'count') continue;
+      for (const key of Object.keys(leagues || {}).filter(key => key !== 'count')) {
         const leagueData = leagues[key];
         const league = leagueData?.league?.[0];
         if (league) result.push({ league_key: league.league_key, name: league.name, season: league.season, teams: parseTeams(leagueData.league[1].teams) });
