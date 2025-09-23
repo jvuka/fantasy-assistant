@@ -32,6 +32,18 @@ export default function Home() {
     }
   };
 
+  const loadTeams = async (leagueKey: string) => {
+    try {
+      const res = await fetch(`/api/yahoo/teams/${leagueKey}`);
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to load teams');
+      if (!Array.isArray(data)) throw new Error('Invalid data: expected array');
+      setTeams(data);
+    } catch (error) {
+      console.error('Error loading teams:', error);
+    }
+  };
+
 
   return (
     <main style={{padding: 24}}>
@@ -46,7 +58,7 @@ export default function Home() {
             <div>
               <h2>Leagues</h2>
               {leagues.map((league: any) => (
-                <button key={league.league_key} onClick={() => setTeams(league.teams)}>
+                <button key={league.league_key} onClick={() => loadTeams(league.league_key)}>
                   {league.name}
                 </button>
               ))}
