@@ -78,12 +78,19 @@ export async function GET(req: NextRequest, { params }: { params: { team_key: st
         const result = [];
         for (const key of Object.keys(players || {}).filter(key => key !== 'count')) {
           const playerData = players[key];
-          const playerInfo = playerData?.player?.[0];
+          const playerInfoArray = playerData?.player?.[0]; // This is an array of objects
           const playerStats = playerData?.player?.[1]?.player_stats;
-          if (playerInfo && playerStats) {
-            const name = playerInfo.name?.full || 'Unknown';
-            const position = playerInfo.primary_position || 'Unknown';
-            const nhl_team = playerInfo.editorial_team_abbr || 'Unknown';
+          if (playerInfoArray && playerStats) {
+            // Find the specific objects in the array by searching for known keys
+            let name = 'Unknown';
+            let position = 'Unknown';
+            let nhl_team = 'Unknown';
+            
+            for (const obj of playerInfoArray) {
+              if (obj.name) name = obj.name.full || 'Unknown';
+              if (obj.primary_position) position = obj.primary_position;
+              if (obj.editorial_team_abbr) nhl_team = obj.editorial_team_abbr;
+            }
             // Parse stats
             const stats: { points?: number; goals?: number; assists?: number } = {};
             for (const stat of playerStats.stats || []) {
