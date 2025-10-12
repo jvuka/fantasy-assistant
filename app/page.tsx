@@ -7,9 +7,12 @@ export default function Home() {
   const [leagues, setLeagues] = useState<any[]>([]);
   const [teams, setTeams] = useState<any[]>([]);
   const [roster, setRoster] = useState<any[]>([]);
+  const [scoreboard, setScoreboard] = useState<any[]>([]);
+  const [matchup, setMatchup] = useState<any>(null);
   const [selectedLeague, setSelectedLeague] = useState<{key: string, name: string} | null>(null);
   const [selectedTeam, setSelectedTeam] = useState<{key: string, name: string} | null>(null);
   const [selectedWeek, setSelectedWeek] = useState<number>(1);
+  const [view, setView] = useState<'teams' | 'roster' | 'scoreboard' | 'matchup'>('teams');
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -36,8 +39,11 @@ export default function Home() {
       // Reset other states
       setTeams([]);
       setRoster([]);
+      setScoreboard([]);
+      setMatchup(null);
       setSelectedLeague(null);
       setSelectedTeam(null);
+      setView('teams');
     } catch (error) {
       console.error('Error loading leagues:', error);
     } finally {
@@ -54,9 +60,12 @@ export default function Home() {
       if (!Array.isArray(data)) throw new Error('Invalid data: expected array');
       setTeams(data);
       setSelectedLeague({key: leagueKey, name: leagueName});
-      // Reset roster
+      // Reset other views
       setRoster([]);
+      setScoreboard([]);
+      setMatchup(null);
       setSelectedTeam(null);
+      setView('teams');
     } catch (error) {
       console.error('Error loading teams:', error);
     } finally {
@@ -67,7 +76,6 @@ export default function Home() {
   const loadRoster = async (teamKey: string, teamName: string, week?: number) => {
     setLoading(true);
     try {
-      // Only add week parameter if explicitly provided
       const url = week ? `/api/yahoo/roster/${teamKey}?week=${week}` : `/api/yahoo/roster/${teamKey}`;
       const res = await fetch(url);
       const data = await res.json();
@@ -75,6 +83,7 @@ export default function Home() {
       if (!Array.isArray(data)) throw new Error('Invalid data: expected array');
       setRoster(data);
       setSelectedTeam({key: teamKey, name: teamName});
+      setView('roster');
     } catch (error) {
       console.error('Error loading roster:', error);
     } finally {
@@ -82,24 +91,68 @@ export default function Home() {
     }
   };
 
+  const loadScoreboard = async (week?: number) => {
+    if (!selectedLeague) return;
+    setLoading(true);
+    const weekNum = week || selectedWeek;
+    try {
+      const res = await fetch(`/api/yahoo/scoreboard/${selectedLeague.key}?week=${weekNum}`);
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to load scoreboard');
+      if (!Array.isArray(data)) throw new Error('Invalid data: expected array');
+      setScoreboard(data);
+      setView('scoreboard');
+    } catch (error) {
+      console.error('Error loading scoreboard:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const loadMatchup = async (week?: number) => {
+    if (!selectedTeam) return;
+    setLoading(true);
+    const weekNum = week || selectedWeek;
+    try {
+      const res = await fetch(`/api/yahoo/matchup/${selectedTeam.key}?week=${weekNum}`);
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to load matchup');
+      setMatchup(data);
+      setView('matchup');
+    } catch (error) {
+      console.error('Error loading matchup:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleWeekChange = (week: number) => {
     setSelectedWeek(week);
-    if (selectedTeam) {
-      // Pass the week number to reload with weekly stats
+    if (view === 'roster' && selectedTeam) {
       loadRoster(selectedTeam.key, selectedTeam.name, week);
+    } else if (view === 'scoreboard') {
+      loadScoreboard(week);
+    } else if (view === 'matchup') {
+      loadMatchup(week);
     }
   };
 
   const goBackToLeagues = () => {
     setTeams([]);
     setRoster([]);
+    setScoreboard([]);
+    setMatchup(null);
     setSelectedLeague(null);
     setSelectedTeam(null);
+    setView('teams');
   };
 
   const goBackToTeams = () => {
     setRoster([]);
+    setScoreboard([]);
+    setMatchup(null);
     setSelectedTeam(null);
+    setView('teams');
   };
 
   return (
@@ -121,6 +174,18 @@ export default function Home() {
             <>
               <span style={{margin: '0 8px'}}>›</span>
               <span style={{fontWeight: 'bold'}}>{selectedTeam.name}</span>
+            </>
+          )}
+          {view === 'scoreboard' && (
+            <>
+              <span style={{margin: '0 8px'}}>›</span>
+              <span style={{fontWeight: 'bold'}}>Head to Head</span>
+            </>
+          )}
+          {view === 'matchup' && (
+            <>
+              <span style={{margin: '0 8px'}}>›</span>
+              <span style={{fontWeight: 'bold'}}>Matchup</span>
             </>
           )}
         </div>
@@ -198,9 +263,26 @@ export default function Home() {
             </div>
           )}
 
-          {teams.length > 0 && !selectedTeam && (
+          {/* Teams View */}
+          {view === 'teams' && teams.length > 0 && (
             <div style={{marginTop: '24px'}}>
-              <h2 style={{marginBottom: '16px'}}>Teams in {selectedLeague?.name}</h2>
+              <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px'}}>
+                <h2 style={{margin: 0}}>Teams in {selectedLeague?.name}</h2>
+                <button
+                  onClick={() => loadScoreboard()}
+                  style={{
+                    padding: '10px 20px',
+                    fontSize: '14px',
+                    backgroundColor: '#28a745',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '4px',
+                    cursor: 'pointer'
+                  }}
+                >
+                  Head to Head
+                </button>
+              </div>
               <div style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))', gap: '16px'}}>
                 {teams.map((team: any) => (
                   <div 
@@ -231,27 +313,44 @@ export default function Home() {
             </div>
           )}
 
-          {roster.length > 0 && (
+          {/* Roster View */}
+          {view === 'roster' && roster.length > 0 && (
             <div style={{marginTop: '24px'}}>
-              <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px'}}>
+              <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '16px'}}>
                 <h2 style={{margin: 0}}>Roster for {selectedTeam?.name}</h2>
-                <div>
-                  <label style={{marginRight: '8px', fontWeight: 'bold'}}>Week:</label>
-                  <select 
-                    value={selectedWeek} 
-                    onChange={(e) => handleWeekChange(parseInt(e.target.value))}
+                <div style={{display: 'flex', gap: '8px', alignItems: 'center'}}>
+                  <button
+                    onClick={() => loadMatchup()}
                     style={{
-                      padding: '8px 16px',
+                      padding: '10px 20px',
                       fontSize: '14px',
-                      border: '1px solid #ddd',
+                      backgroundColor: '#28a745',
+                      color: 'white',
+                      border: 'none',
                       borderRadius: '4px',
                       cursor: 'pointer'
                     }}
                   >
-                    {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26].map(week => (
-                      <option key={week} value={week}>Week {week}</option>
-                    ))}
-                  </select>
+                    Head to Head
+                  </button>
+                  <div>
+                    <label style={{marginRight: '8px', fontWeight: 'bold'}}>Week:</label>
+                    <select 
+                      value={selectedWeek} 
+                      onChange={(e) => handleWeekChange(parseInt(e.target.value))}
+                      style={{
+                        padding: '8px 16px',
+                        fontSize: '14px',
+                        border: '1px solid #ddd',
+                        borderRadius: '4px',
+                        cursor: 'pointer'
+                      }}
+                    >
+                      {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26].map(week => (
+                        <option key={week} value={week}>Week {week}</option>
+                      ))}
+                    </select>
+                  </div>
                 </div>
               </div>
               <div style={{overflowX: 'auto'}}>
@@ -296,6 +395,183 @@ export default function Home() {
                     ))}
                   </tbody>
                 </table>
+              </div>
+            </div>
+          )}
+
+          {/* Scoreboard View */}
+          {view === 'scoreboard' && (
+            <div style={{marginTop: '24px'}}>
+              <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px'}}>
+                <h2 style={{margin: 0}}>Head to Head - {selectedLeague?.name}</h2>
+                <div>
+                  <label style={{marginRight: '8px', fontWeight: 'bold'}}>Week:</label>
+                  <select 
+                    value={selectedWeek} 
+                    onChange={(e) => handleWeekChange(parseInt(e.target.value))}
+                    style={{
+                      padding: '8px 16px',
+                      fontSize: '14px',
+                      border: '1px solid #ddd',
+                      borderRadius: '4px',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26].map(week => (
+                      <option key={week} value={week}>Week {week}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+              <div style={{overflowX: 'auto'}}>
+                <table style={{
+                  width: '100%',
+                  borderCollapse: 'collapse',
+                  backgroundColor: 'white',
+                  boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
+                }}>
+                  <thead>
+                    <tr style={{backgroundColor: '#003366', color: 'white'}}>
+                      <th style={{padding: '12px', textAlign: 'left', borderBottom: '2px solid #ddd'}}>Matchup</th>
+                      <th style={{padding: '12px', textAlign: 'center', borderBottom: '2px solid #ddd'}}>Score</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {scoreboard.map((matchup: any, index: number) => (
+                      <tr 
+                        key={index}
+                        style={{
+                          borderBottom: '1px solid #eee',
+                          backgroundColor: index % 2 === 0 ? 'white' : '#f9f9f9'
+                        }}
+                      >
+                        <td style={{padding: '12px'}}>
+                          <div style={{fontWeight: '500'}}>{matchup.team1}</div>
+                          <div style={{fontSize: '14px', color: '#666', marginTop: '4px'}}>vs</div>
+                          <div style={{fontWeight: '500', marginTop: '4px'}}>{matchup.team2}</div>
+                        </td>
+                        <td style={{padding: '12px', textAlign: 'center'}}>
+                          <div style={{fontSize: '18px', fontWeight: 'bold', color: matchup.team1_points > matchup.team2_points ? '#28a745' : '#003366'}}>
+                            {matchup.team1_points}
+                          </div>
+                          <div style={{fontSize: '14px', color: '#666', margin: '4px 0'}}>-</div>
+                          <div style={{fontSize: '18px', fontWeight: 'bold', color: matchup.team2_points > matchup.team1_points ? '#28a745' : '#003366'}}>
+                            {matchup.team2_points}
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+
+          {/* Matchup Detail View */}
+          {view === 'matchup' && matchup && (
+            <div style={{marginTop: '24px'}}>
+              <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px'}}>
+                <h2 style={{margin: 0}}>Head to Head Matchup - Week {matchup.week}</h2>
+                <div>
+                  <label style={{marginRight: '8px', fontWeight: 'bold'}}>Week:</label>
+                  <select 
+                    value={selectedWeek} 
+                    onChange={(e) => handleWeekChange(parseInt(e.target.value))}
+                    style={{
+                      padding: '8px 16px',
+                      fontSize: '14px',
+                      border: '1px solid #ddd',
+                      borderRadius: '4px',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26].map(week => (
+                      <option key={week} value={week}>Week {week}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+              
+              {/* Matchup Score Header */}
+              <div style={{
+                display: 'flex',
+                justifyContent: 'space-around',
+                padding: '24px',
+                backgroundColor: '#003366',
+                color: 'white',
+                borderRadius: '8px',
+                marginBottom: '24px'
+              }}>
+                <div style={{textAlign: 'center'}}>
+                  <div style={{fontSize: '20px', fontWeight: 'bold', marginBottom: '8px'}}>{matchup.team1.name}</div>
+                  <div style={{fontSize: '36px', fontWeight: 'bold'}}>{matchup.team1.points}</div>
+                </div>
+                <div style={{display: 'flex', alignItems: 'center', fontSize: '24px', fontWeight: 'bold'}}>VS</div>
+                <div style={{textAlign: 'center'}}>
+                  <div style={{fontSize: '20px', fontWeight: 'bold', marginBottom: '8px'}}>{matchup.team2.name}</div>
+                  <div style={{fontSize: '36px', fontWeight: 'bold'}}>{matchup.team2.points}</div>
+                </div>
+              </div>
+
+              {/* Side-by-side Rosters */}
+              <div style={{display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px'}}>
+                {/* Team 1 Roster */}
+                <div>
+                  <h3 style={{marginBottom: '12px', color: '#003366'}}>{matchup.team1.name} Roster</h3>
+                  <table style={{
+                    width: '100%',
+                    borderCollapse: 'collapse',
+                    backgroundColor: 'white',
+                    boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+                    fontSize: '14px'
+                  }}>
+                    <thead>
+                      <tr style={{backgroundColor: '#003366', color: 'white'}}>
+                        <th style={{padding: '8px', textAlign: 'left'}}>Player</th>
+                        <th style={{padding: '8px', textAlign: 'center'}}>Pos</th>
+                        <th style={{padding: '8px', textAlign: 'center'}}>Pts</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {matchup.team1.roster.map((player: any, index: number) => (
+                        <tr key={index} style={{borderBottom: '1px solid #eee'}}>
+                          <td style={{padding: '8px'}}>{player.name}</td>
+                          <td style={{padding: '8px', textAlign: 'center'}}>{player.position}</td>
+                          <td style={{padding: '8px', textAlign: 'center', fontWeight: 'bold'}}>{player.points}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+
+                {/* Team 2 Roster */}
+                <div>
+                  <h3 style={{marginBottom: '12px', color: '#003366'}}>{matchup.team2.name} Roster</h3>
+                  <table style={{
+                    width: '100%',
+                    borderCollapse: 'collapse',
+                    backgroundColor: 'white',
+                    boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+                    fontSize: '14px'
+                  }}>
+                    <thead>
+                      <tr style={{backgroundColor: '#003366', color: 'white'}}>
+                        <th style={{padding: '8px', textAlign: 'left'}}>Player</th>
+                        <th style={{padding: '8px', textAlign: 'center'}}>Pos</th>
+                        <th style={{padding: '8px', textAlign: 'center'}}>Pts</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {matchup.team2.roster.map((player: any, index: number) => (
+                        <tr key={index} style={{borderBottom: '1px solid #eee'}}>
+                          <td style={{padding: '8px'}}>{player.name}</td>
+                          <td style={{padding: '8px', textAlign: 'center'}}>{player.position}</td>
+                          <td style={{padding: '8px', textAlign: 'center', fontWeight: 'bold'}}>{player.points}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               </div>
             </div>
           )}
