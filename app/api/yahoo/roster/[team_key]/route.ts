@@ -88,7 +88,8 @@ export async function GET(req: NextRequest, { params }: { params: { team_key: st
             
             for (const obj of playerInfoArray) {
               if (obj.name) name = obj.name.full || 'Unknown';
-              if (obj.primary_position) position = obj.primary_position;
+              // In stats response, use display_position instead of primary_position
+              if (obj.display_position) position = obj.display_position;
               if (obj.editorial_team_abbr) nhl_team = obj.editorial_team_abbr;
             }
             // Parse stats
