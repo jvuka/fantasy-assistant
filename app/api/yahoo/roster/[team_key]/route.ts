@@ -42,7 +42,8 @@ export async function GET(req: NextRequest, { params }: { params: { team_key: st
       const playerKeys = [];
       for (const key of Object.keys(roster || {}).filter(key => key !== 'count')) {
         const playerData = roster[key];
-        const playerKey = playerData?.player?.[0]?.player_key;
+        // player is an array where player[0] is itself an array of player info objects
+        const playerKey = playerData?.player?.[0]?.[0]?.player_key;
         if (playerKey) playerKeys.push(playerKey);
       }
       if (playerKeys.length === 0) {
