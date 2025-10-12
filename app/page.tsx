@@ -64,10 +64,12 @@ export default function Home() {
     }
   };
 
-  const loadRoster = async (teamKey: string, teamName: string) => {
+  const loadRoster = async (teamKey: string, teamName: string, week?: number) => {
     setLoading(true);
     try {
-      const res = await fetch(`/api/yahoo/roster/${teamKey}?week=${selectedWeek}`);
+      // Only add week parameter if explicitly provided
+      const url = week ? `/api/yahoo/roster/${teamKey}?week=${week}` : `/api/yahoo/roster/${teamKey}`;
+      const res = await fetch(url);
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Failed to load roster');
       if (!Array.isArray(data)) throw new Error('Invalid data: expected array');
@@ -83,7 +85,8 @@ export default function Home() {
   const handleWeekChange = (week: number) => {
     setSelectedWeek(week);
     if (selectedTeam) {
-      loadRoster(selectedTeam.key, selectedTeam.name);
+      // Pass the week number to reload with weekly stats
+      loadRoster(selectedTeam.key, selectedTeam.name, week);
     }
   };
 
