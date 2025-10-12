@@ -53,37 +53,41 @@ export async function GET(req: NextRequest, { params }: { params: { team_key: st
         }
       }
 
-      if (!matchups || !matchups[0]?.matchup) {
+      if (!matchups || !matchups["0"]?.matchup) {
         return NextResponse.json({ error: 'No matchup found for this week' }, { status: 404 });
       }
 
-      const matchup = matchups[0].matchup[0];
-      const teams = matchup?.teams?.team;
+      const matchupObj = matchups["0"].matchup;
+      const matchupDetail = matchupObj["0"];
+      const teams = matchupDetail?.teams;
 
-      if (!teams || !Array.isArray(teams) || teams.length < 2) {
+      if (!teams || !teams["0"] || !teams["1"]) {
         return NextResponse.json({ error: 'Invalid matchup data' }, { status: 500 });
       }
 
       // Parse both teams' data
       const parseTeamData = (teamData: any) => {
-        const teamInfo = teamData?.team?.[0];
-        if (!teamInfo) return null;
+        const teamArray = teamData?.team;
+        if (!teamArray || teamArray.length < 2) return null;
+
+        const teamInfo = teamArray[0]; // Array of team info objects
+        const teamStats = teamArray[1]; // Object with stats and points
 
         let name = 'Unknown';
-        let points = 0;
         let team_key = '';
 
         for (const obj of teamInfo) {
           if (obj.name) name = obj.name;
           if (obj.team_key) team_key = obj.team_key;
-          if (obj.team_points) points = parseFloat(obj.team_points.total) || 0;
         }
+
+        const points = parseFloat(teamStats?.team_points?.total) || 0;
 
         return { name, points, team_key };
       };
 
-      const team1 = parseTeamData(teams[0]);
-      const team2 = parseTeamData(teams[1]);
+      const team1 = parseTeamData(teams["0"]);
+      const team2 = parseTeamData(teams["1"]);
 
       if (!team1 || !team2) {
         return NextResponse.json({ error: 'Failed to parse team data' }, { status: 500 });
