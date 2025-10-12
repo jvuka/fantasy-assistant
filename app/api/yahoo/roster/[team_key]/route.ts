@@ -33,10 +33,9 @@ export async function GET(req: NextRequest, { params }: { params: { team_key: st
       if (!rosterData?.fantasy_content?.team) {
         throw new Error('Missing fantasy_content.team in roster response');
       }
-      // Parse player keys
-      const teamKey = Object.keys(rosterData.fantasy_content.team)[0];
-      const teamData = rosterData.fantasy_content.team[teamKey];
-      const roster = teamData?.team?.[1]?.roster?.[0]?.players;
+      // Parse player keys - team is an array with [metadata, roster]
+      const teamArray = rosterData.fantasy_content.team;
+      const roster = teamArray[1]?.roster?.["0"]?.players;
       if (!roster) {
         throw new Error('No roster found in response');
       }
