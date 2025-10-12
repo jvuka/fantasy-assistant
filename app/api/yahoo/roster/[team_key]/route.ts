@@ -49,9 +49,14 @@ export async function GET(req: NextRequest, { params }: { params: { team_key: st
         return NextResponse.json([]);
       }
 
-      // Fetch player stats
+      // Fetch player stats - use current season
+      const currentYear = new Date().getFullYear();
+      const currentMonth = new Date().getMonth(); // 0-11
+      // NHL season starts in October (month 9), so if we're past September, use current year
+      const season = currentMonth >= 9 ? currentYear : currentYear - 1;
+      
       const playerKeysStr = playerKeys.join(',');
-      const statsResponse = await fetch(`https://fantasysports.yahooapis.com/fantasy/v2/players;player_keys=${playerKeysStr}/stats;type=season;season=2024?format=json`, {
+      const statsResponse = await fetch(`https://fantasysports.yahooapis.com/fantasy/v2/players;player_keys=${playerKeysStr}/stats;type=season;season=${season}?format=json`, {
         headers: {
           'Authorization': `Bearer ${access_token}`,
         },
