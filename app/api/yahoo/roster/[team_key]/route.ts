@@ -91,7 +91,8 @@ export async function GET(req: NextRequest, { params }: { params: { team_key: st
           const playerData = players[key];
           const playerInfoArray = playerData?.player?.[0]; // This is an array of objects
           const playerStats = playerData?.player?.[1]?.player_stats;
-          if (playerInfoArray && playerStats) {
+          
+          if (playerInfoArray) {
             // Find the specific objects in the array by searching for known keys
             let name = 'Unknown';
             let position = 'Unknown';
@@ -103,15 +104,19 @@ export async function GET(req: NextRequest, { params }: { params: { team_key: st
               if (obj.display_position) position = obj.display_position;
               if (obj.editorial_team_abbr) nhl_team = obj.editorial_team_abbr;
             }
-            // Parse stats
+            
+            // Parse stats - handle both weekly and season stats format
             const stats: { points?: number; goals?: number; assists?: number } = {};
-            for (const stat of playerStats.stats || []) {
-              const statId = stat.stat.stat_id;
-              const value = stat.stat.value;
-              if (statId === '4') stats.points = parseFloat(value) || 0; // stat_id 4 is points
-              else if (statId === '2') stats.goals = parseInt(value) || 0; // 2 is goals
-              else if (statId === '3') stats.assists = parseInt(value) || 0; // 3 is assists
+            if (playerStats && playerStats.stats) {
+              for (const stat of playerStats.stats) {
+                const statId = stat.stat.stat_id;
+                const value = stat.stat.value;
+                if (statId === '4') stats.points = parseFloat(value) || 0; // stat_id 4 is points
+                else if (statId === '2') stats.goals = parseInt(value) || 0; // 2 is goals
+                else if (statId === '3') stats.assists = parseInt(value) || 0; // 3 is assists
+              }
             }
+            
             result.push({
               name,
               position,
