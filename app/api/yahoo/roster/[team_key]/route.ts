@@ -14,6 +14,10 @@ export async function GET(req: NextRequest, { params }: { params: { team_key: st
     return new NextResponse('Not authenticated', { status: 401 });
   }
 
+  // Get week parameter from query string (optional)
+  const { searchParams } = new URL(req.url);
+  const week = searchParams.get('week');
+
   try {
     // Fetch team roster
     const rosterResponse = await fetch(`https://fantasysports.yahooapis.com/fantasy/v2/team/${params.team_key}/roster?format=json`, {
@@ -57,7 +61,14 @@ export async function GET(req: NextRequest, { params }: { params: { team_key: st
       const season = currentMonth >= 9 ? currentYear : currentYear - 1;
       
       const playerKeysStr = playerKeys.join(',');
-      const statsResponse = await fetch(`https://fantasysports.yahooapis.com/fantasy/v2/players;player_keys=${playerKeysStr}/stats;type=season;season=${season}?format=json`, {
+      // Build stats URL - if week is provided, get weekly stats, otherwise season stats
+      let statsUrl;
+      if (week) {
+        statsUrl = `https://fantasysports.yahooapis.com/fantasy/v2/players;player_keys=${playerKeysStr}/stats;type=week;week=${week}?format=json`;
+      } else {
+        statsUrl = `https://fantasysports.yahooapis.com/fantasy/v2/players;player_keys=${playerKeysStr}/stats;type=season;season=${season}?format=json`;
+      }
+      const statsResponse = await fetch(statsUrl, {
         headers: {
           'Authorization': `Bearer ${access_token}`,
         },
