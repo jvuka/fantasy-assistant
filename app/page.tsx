@@ -9,10 +9,13 @@ export default function Home() {
   const [roster, setRoster] = useState<any[]>([]);
   const [scoreboard, setScoreboard] = useState<any[]>([]);
   const [matchup, setMatchup] = useState<any>(null);
+  const [players, setPlayers] = useState<any[]>([]);
+  const [playersTotal, setPlayersTotal] = useState<number>(0);
+  const [playersPage, setPlayersPage] = useState<number>(0);
   const [selectedLeague, setSelectedLeague] = useState<{key: string, name: string} | null>(null);
   const [selectedTeam, setSelectedTeam] = useState<{key: string, name: string} | null>(null);
   const [selectedWeek, setSelectedWeek] = useState<number>(1);
-  const [view, setView] = useState<'teams' | 'roster' | 'scoreboard' | 'matchup'>('teams');
+  const [view, setView] = useState<'teams' | 'roster' | 'scoreboard' | 'matchup' | 'players'>('teams');
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -126,6 +129,25 @@ export default function Home() {
     }
   };
 
+  const loadPlayers = async (page: number = 0) => {
+    if (!selectedLeague) return;
+    setLoading(true);
+    const start = page * 25;
+    try {
+      const res = await fetch(`/api/yahoo/players/${selectedLeague.key}?start=${start}&count=25`);
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to load players');
+      setPlayers(data.players || []);
+      setPlayersTotal(data.total || 0);
+      setPlayersPage(page);
+      setView('players');
+    } catch (error) {
+      console.error('Error loading players:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleWeekChange = (week: number) => {
     setSelectedWeek(week);
     if (view === 'roster' && selectedTeam) {
@@ -142,6 +164,7 @@ export default function Home() {
     setRoster([]);
     setScoreboard([]);
     setMatchup(null);
+    setPlayers([]);
     setSelectedLeague(null);
     setSelectedTeam(null);
     setView('teams');
@@ -151,6 +174,7 @@ export default function Home() {
     setRoster([]);
     setScoreboard([]);
     setMatchup(null);
+    setPlayers([]);
     setSelectedTeam(null);
     setView('teams');
   };
@@ -186,6 +210,12 @@ export default function Home() {
             <>
               <span style={{margin: '0 8px'}}>›</span>
               <span style={{fontWeight: 'bold'}}>Matchup</span>
+            </>
+          )}
+          {view === 'players' && (
+            <>
+              <span style={{margin: '0 8px'}}>›</span>
+              <span style={{fontWeight: 'bold'}}>Available Players</span>
             </>
           )}
         </div>
@@ -268,20 +298,36 @@ export default function Home() {
             <div style={{marginTop: '24px'}}>
               <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px'}}>
                 <h2 style={{margin: 0}}>Teams in {selectedLeague?.name}</h2>
-                <button
-                  onClick={() => loadScoreboard()}
-                  style={{
-                    padding: '10px 20px',
-                    fontSize: '14px',
-                    backgroundColor: '#28a745',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: '4px',
-                    cursor: 'pointer'
-                  }}
-                >
-                  Head to Head
-                </button>
+                <div style={{display: 'flex', gap: '8px'}}>
+                  <button
+                    onClick={() => loadPlayers(0)}
+                    style={{
+                      padding: '10px 20px',
+                      fontSize: '14px',
+                      backgroundColor: '#0066cc',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '4px',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    Players
+                  </button>
+                  <button
+                    onClick={() => loadScoreboard()}
+                    style={{
+                      padding: '10px 20px',
+                      fontSize: '14px',
+                      backgroundColor: '#28a745',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '4px',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    Head to Head
+                  </button>
+                </div>
               </div>
               <div style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))', gap: '16px'}}>
                 {teams.map((team: any) => (
@@ -528,6 +574,101 @@ export default function Home() {
                     <thead>
                       <tr style={{backgroundColor: '#003366', color: 'white'}}>
                         <th style={{padding: '8px', textAlign: 'left'}}>Player</th>
+
+          {/* Players View */}
+          {view === 'players' && (
+            <div style={{marginTop: '24px'}}>
+              <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px'}}>
+                <h2 style={{margin: 0}}>Available Players - {selectedLeague?.name}</h2>
+              </div>
+              <div style={{overflowX: 'auto'}}>
+                <table style={{
+                  width: '100%',
+                  borderCollapse: 'collapse',
+                  backgroundColor: 'white',
+                  boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
+                }}>
+                  <thead>
+                    <tr style={{backgroundColor: '#003366', color: 'white'}}>
+                      <th style={{padding: '12px', textAlign: 'left', borderBottom: '2px solid #ddd'}}>Rank</th>
+                      <th style={{padding: '12px', textAlign: 'left', borderBottom: '2px solid #ddd'}}>Player Name</th>
+                      <th style={{padding: '12px', textAlign: 'left', borderBottom: '2px solid #ddd'}}>Position</th>
+                      <th style={{padding: '12px', textAlign: 'left', borderBottom: '2px solid #ddd'}}>NHL Team</th>
+                      <th style={{padding: '12px', textAlign: 'center', borderBottom: '2px solid #ddd'}}>GP</th>
+                      <th style={{padding: '12px', textAlign: 'center', borderBottom: '2px solid #ddd'}}>Goals</th>
+                      <th style={{padding: '12px', textAlign: 'center', borderBottom: '2px solid #ddd'}}>Assists</th>
+                      <th style={{padding: '12px', textAlign: 'center', borderBottom: '2px solid #ddd'}}>Points</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {players.map((player: any, index: number) => (
+                      <tr 
+                        key={player.player_id}
+                        style={{
+                          borderBottom: '1px solid #eee',
+                          backgroundColor: index % 2 === 0 ? 'white' : '#f9f9f9'
+                        }}
+                        onMouseOver={(e) => {
+                          e.currentTarget.style.backgroundColor = '#f0f8ff';
+                        }}
+                        onMouseOut={(e) => {
+                          e.currentTarget.style.backgroundColor = index % 2 === 0 ? 'white' : '#f9f9f9';
+                        }}
+                      >
+                        <td style={{padding: '12px', fontWeight: 'bold', color: '#0066cc'}}>{player.editorial_rank || '-'}</td>
+                        <td style={{padding: '12px', fontWeight: '500'}}>{player.name}</td>
+                        <td style={{padding: '12px'}}>{player.position}</td>
+                        <td style={{padding: '12px', color: '#666'}}>{player.nhl_team}</td>
+                        <td style={{padding: '12px', textAlign: 'center'}}>{player.games_played}</td>
+                        <td style={{padding: '12px', textAlign: 'center'}}>{player.goals}</td>
+                        <td style={{padding: '12px', textAlign: 'center'}}>{player.assists}</td>
+                        <td style={{padding: '12px', textAlign: 'center', fontWeight: 'bold'}}>{player.points}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              
+              {/* Pagination */}
+              <div style={{marginTop: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
+                <div style={{color: '#666'}}>
+                  Showing {playersPage * 25 + 1}-{Math.min((playersPage + 1) * 25, playersTotal)} of {playersTotal} players
+                </div>
+                <div style={{display: 'flex', gap: '8px'}}>
+                  <button
+                    onClick={() => loadPlayers(playersPage - 1)}
+                    disabled={playersPage === 0}
+                    style={{
+                      padding: '8px 16px',
+                      fontSize: '14px',
+                      backgroundColor: playersPage === 0 ? '#ccc' : '#0066cc',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '4px',
+                      cursor: playersPage === 0 ? 'not-allowed' : 'pointer'
+                    }}
+                  >
+                    Previous
+                  </button>
+                  <button
+                    onClick={() => loadPlayers(playersPage + 1)}
+                    disabled={(playersPage + 1) * 25 >= playersTotal}
+                    style={{
+                      padding: '8px 16px',
+                      fontSize: '14px',
+                      backgroundColor: (playersPage + 1) * 25 >= playersTotal ? '#ccc' : '#0066cc',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '4px',
+                      cursor: (playersPage + 1) * 25 >= playersTotal ? 'not-allowed' : 'pointer'
+                    }}
+                  >
+                    Next
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
                         <th style={{padding: '8px', textAlign: 'center'}}>Pos</th>
                         <th style={{padding: '8px', textAlign: 'center'}}>Pts</th>
                       </tr>
