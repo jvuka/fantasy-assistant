@@ -91,88 +91,9 @@ export async function GET(req: NextRequest, { params }: { params: { team_key: st
         if (!statsData?.fantasy_content?.players) {
           throw new Error('Missing fantasy_content.players in stats response');
         }
-        const players = statsData.fantasy_content.players;
-        const result = [];
-        for (const key of Object.keys(players || {}).filter(key => key !== 'count')) {
-          const playerData = players[key];
-          const playerInfoArray = playerData?.player?.[0]; // This is an array of objects
-          const playerStats = playerData?.player?.[1]?.player_stats;
-          
-          if (playerInfoArray) {
-            // Find the specific objects in the array by searching for known keys
-            let name = 'Unknown';
-            let position = 'Unknown';
-            let nhl_team = 'Unknown';
-            let player_key = '';
-            
-            for (const obj of playerInfoArray) {
-              if (obj.name) name = obj.name.full || 'Unknown';
-              // In stats response, use display_position instead of primary_position
-              if (obj.display_position) position = obj.display_position;
-              if (obj.editorial_team_abbr) nhl_team = obj.editorial_team_abbr;
-              if (obj.player_key) player_key = obj.player_key;
-            }
-            
-            // Parse stats - handle both weekly and season stats format
-            // Detect if player is a goalie
-            const isGoalie = position === 'G';
-            
-            const stats: any = {
-              goals: 0,
-              assists: 0,
-              points: 0,
-              ppp: 0,
-              hits: 0,
-              plus_minus: 0,
-              wins: 0,
-              gaa: 0,
-              sv_pct: 0
-            };
-            
-            if (playerStats && playerStats.stats) {
-              console.log(`Stats for ${name}:`, JSON.stringify(playerStats.stats));
-              for (const stat of playerStats.stats) {
-                const statId = stat.stat.stat_id;
-                const value = stat.stat.value;
-                
-                // Player stats
-                if (statId === '2') stats.goals = parseInt(value) || 0; // Goals
-                else if (statId === '3') stats.assists = parseInt(value) || 0; // Assists
-                else if (statId === '4') stats.points = parseFloat(value) || 0; // Fantasy Points
-                else if (statId === '13') stats.ppp = parseInt(value) || 0; // Power Play Points
-                else if (statId === '31') stats.hits = parseInt(value) || 0; // Hits
-                else if (statId === '28') stats.plus_minus = parseInt(value) || 0; // Plus/Minus
-                
-                // Goalie stats
-                else if (statId === '22') stats.wins = parseInt(value) || 0; // Wins
-                else if (statId === '23') stats.gaa = parseFloat(value) || 0; // Goals Against Average
-                else if (statId === '24') stats.sv_pct = parseFloat(value) || 0; // Save Percentage
-              }
-            }
-            
-            // Get selected position (lineup spot) for this player
-            const selected_position = playerPositions.get(player_key) || 'Unknown';
-            const is_benched = selected_position === 'BN';
-            
-            result.push({
-              name,
-              position,
-              nhl_team,
-              is_goalie: isGoalie,
-              goals: stats.goals,
-              assists: stats.assists,
-              points: stats.points,
-              ppp: stats.ppp,
-              hits: stats.hits,
-              plus_minus: stats.plus_minus,
-              wins: stats.wins,
-              gaa: stats.gaa,
-              sv_pct: stats.sv_pct,
-              selected_position,
-              is_benched,
-            });
-          }
-        }
+
+        // Use the shared stats service to parse roster with stats
+        const result = yahooStatsService.parseRosterWithStats(playerKeys, playerPositions, statsData);
         return NextResponse.json(result);
       } catch (error) {
         console.error('Error parsing stats:', error, error instanceof Error ? error.stack : 'No stack', 'Partial data:', statsData ? JSON.stringify(statsData).slice(0, 500) : 'No data');
