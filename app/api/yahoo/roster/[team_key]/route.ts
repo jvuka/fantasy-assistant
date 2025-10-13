@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSession } from '../../../../../lib/session';
+import { yahooStatsService } from '../../../../../lib/yahoo/stats-service';
 
 export async function GET(req: NextRequest, { params }: { params: { team_key: string } }) {
   const session = await getSession();
