@@ -59,31 +59,56 @@ export async function GET(req: NextRequest, { params }: { params: { league_key: 
 
       const result = [];
       for (const key of Object.keys(matchups).filter(key => key !== 'count')) {
-        const matchup = matchups[key]?.matchup;
-        if (!matchup) continue;
+        // Yahoo API uses numeric string keys like "0", "1", etc.
+        const matchupWrapper = matchups[key];
+        if (!matchupWrapper || !matchupWrapper.matchup) continue;
 
-        const teams = matchup[0]?.teams?.team;
-        if (!teams || !Array.isArray(teams) || teams.length < 2) continue;
+        const matchup = matchupWrapper.matchup;
+        const matchupDetail = matchup["0"];
+        if (!matchupDetail) continue;
 
-        const team1Data = teams[0]?.team?.[0];
-        const team2Data = teams[1]?.team?.[0];
+        const teams = matchupDetail.teams;
+        if (!teams) continue;
 
-        if (!team1Data || !team2Data) continue;
+        // Teams are keyed as "0" and "1"
+        const team1Wrapper = teams["0"];
+        const team2Wrapper = teams["1"];
+        
+        if (!team1Wrapper || !team2Wrapper) continue;
 
-        // Extract team names and points
+        const team1Array = team1Wrapper.team;
+        const team2Array = team2Wrapper.team;
+
+        if (!Array.isArray(team1Array) || !Array.isArray(team2Array)) continue;
+
+        // Extract team names and points from team arrays
         let team1Name = 'Unknown';
         let team1Points = 0;
         let team2Name = 'Unknown';
         let team2Points = 0;
 
-        for (const obj of team1Data) {
-          if (obj.name) team1Name = obj.name;
-          if (obj.team_points) team1Points = parseFloat(obj.team_points.total) || 0;
+        // team[0] contains array of info objects, team[1] contains team_points
+        const team1Info = team1Array[0];
+        const team1Stats = team1Array[1];
+        const team2Info = team2Array[0];
+        const team2Stats = team2Array[1];
+
+        if (Array.isArray(team1Info)) {
+          for (const obj of team1Info) {
+            if (obj.name) team1Name = obj.name;
+          }
+        }
+        if (team1Stats && team1Stats.team_points) {
+          team1Points = parseFloat(team1Stats.team_points.total) || 0;
         }
 
-        for (const obj of team2Data) {
-          if (obj.name) team2Name = obj.name;
-          if (obj.team_points) team2Points = parseFloat(obj.team_points.total) || 0;
+        if (Array.isArray(team2Info)) {
+          for (const obj of team2Info) {
+            if (obj.name) team2Name = obj.name;
+          }
+        }
+        if (team2Stats && team2Stats.team_points) {
+          team2Points = parseFloat(team2Stats.team_points.total) || 0;
         }
 
         result.push({
