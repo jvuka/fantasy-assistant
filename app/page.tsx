@@ -534,8 +534,18 @@ export default function Home() {
                     </thead>
                     <tbody>
                       {matchup.team1.roster.map((player: any, index: number) => (
-                        <tr key={index} style={{borderBottom: '1px solid #eee'}}>
-                          <td style={{padding: '8px'}}>{player.name}</td>
+                        <tr
+                          key={index}
+                          style={{
+                            borderBottom: '1px solid #eee',
+                            backgroundColor: player.is_benched ? '#f5f5f5' : 'white',
+                            opacity: player.is_benched ? 0.6 : 1
+                          }}
+                        >
+                          <td style={{padding: '8px'}}>
+                            {player.name}
+                            {player.is_benched && <span style={{marginLeft: '8px', fontSize: '11px', color: '#666', fontStyle: 'italic'}}>(Bench)</span>}
+                          </td>
                           <td style={{padding: '8px', textAlign: 'center'}}>{player.position}</td>
                           <td style={{padding: '8px', textAlign: 'center', fontWeight: 'bold'}}>{player.points}</td>
                         </tr>
@@ -563,8 +573,18 @@ export default function Home() {
                     </thead>
                     <tbody>
                       {matchup.team2.roster.map((player: any, index: number) => (
-                        <tr key={index} style={{borderBottom: '1px solid #eee'}}>
-                          <td style={{padding: '8px'}}>{player.name}</td>
+                        <tr
+                          key={index}
+                          style={{
+                            borderBottom: '1px solid #eee',
+                            backgroundColor: player.is_benched ? '#f5f5f5' : 'white',
+                            opacity: player.is_benched ? 0.6 : 1
+                          }}
+                        >
+                          <td style={{padding: '8px'}}>
+                            {player.name}
+                            {player.is_benched && <span style={{marginLeft: '8px', fontSize: '11px', color: '#666', fontStyle: 'italic'}}>(Bench)</span>}
+                          </td>
                           <td style={{padding: '8px', textAlign: 'center'}}>{player.position}</td>
                           <td style={{padding: '8px', textAlign: 'center', fontWeight: 'bold'}}>{player.points}</td>
                         </tr>

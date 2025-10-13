@@ -37,18 +37,23 @@ export async function GET(req: NextRequest, { params }: { params: { team_key: st
       if (!rosterData?.fantasy_content?.team) {
         throw new Error('Missing fantasy_content.team in roster response');
       }
-      // Parse player keys - team is an array with [metadata, roster]
+      // Parse player keys and selected positions - team is an array with [metadata, roster]
       const teamArray = rosterData.fantasy_content.team;
       const roster = teamArray[1]?.roster?.["0"]?.players;
       if (!roster) {
         throw new Error('No roster found in response');
       }
       const playerKeys = [];
+      const playerPositions = new Map(); // Map player_key to selected_position
       for (const key of Object.keys(roster || {}).filter(key => key !== 'count')) {
         const playerData = roster[key];
         // player is an array where player[0] is itself an array of player info objects
         const playerKey = playerData?.player?.[0]?.[0]?.player_key;
-        if (playerKey) playerKeys.push(playerKey);
+        const selectedPosition = playerData?.player?.[1]?.selected_position?.[1]?.position || 'Unknown';
+        if (playerKey) {
+          playerKeys.push(playerKey);
+          playerPositions.set(playerKey, selectedPosition);
+        }
       }
       if (playerKeys.length === 0) {
         return NextResponse.json([]);
@@ -97,12 +102,14 @@ export async function GET(req: NextRequest, { params }: { params: { team_key: st
             let name = 'Unknown';
             let position = 'Unknown';
             let nhl_team = 'Unknown';
+            let player_key = '';
             
             for (const obj of playerInfoArray) {
               if (obj.name) name = obj.name.full || 'Unknown';
               // In stats response, use display_position instead of primary_position
               if (obj.display_position) position = obj.display_position;
               if (obj.editorial_team_abbr) nhl_team = obj.editorial_team_abbr;
+              if (obj.player_key) player_key = obj.player_key;
             }
             
             // Parse stats - handle both weekly and season stats format
@@ -117,6 +124,10 @@ export async function GET(req: NextRequest, { params }: { params: { team_key: st
               }
             }
             
+            // Get selected position (lineup spot) for this player
+            const selected_position = playerPositions.get(player_key) || 'Unknown';
+            const is_benched = selected_position === 'BN';
+            
             result.push({
               name,
               position,
@@ -124,6 +135,8 @@ export async function GET(req: NextRequest, { params }: { params: { team_key: st
               points: stats.points || 0,
               goals: stats.goals || 0,
               assists: stats.assists || 0,
+              selected_position,
+              is_benched,
             });
           }
         }
