@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSession } from '../../../../../lib/session';
+import { yahooStatsService } from '../../../../../lib/yahoo/stats-service';
 
 export async function GET(req: NextRequest, { params }: { params: { team_key: string } }) {
   const session = await getSession();
@@ -93,28 +94,68 @@ export async function GET(req: NextRequest, { params }: { params: { team_key: st
         return NextResponse.json({ error: 'Failed to parse team data' }, { status: 500 });
       }
 
-      // Fetch rosters for both teams with weekly stats
-      const fetchTeamRoster = async (teamKey: string) => {
-        const rosterRes = await fetch(
-          `${req.nextUrl.protocol}//${req.nextUrl.host}/api/yahoo/roster/${teamKey}?week=${week}`,
-          {
+      // Fetch rosters for both teams with weekly stats using the shared service
+      const fetchTeamRosterWithStats = async (teamKey: string) => {
+        try {
+          // First get the roster data from Yahoo
+          const rosterResponse = await fetch(`https://fantasysports.yahooapis.com/fantasy/v2/team/${teamKey}/roster?format=json`, {
             headers: {
-              'Cookie': req.headers.get('cookie') || '',
+              'Authorization': `Bearer ${access_token}`,
             },
-          }
-        );
+          });
 
-        if (!rosterRes.ok) {
-          console.error(`Failed to fetch roster for ${teamKey}`);
+          if (!rosterResponse.ok) {
+            console.error(`Failed to fetch roster for ${teamKey}`);
+            return [];
+          }
+
+          const rosterData = await rosterResponse.json();
+
+          if (!rosterData?.fantasy_content?.team) {
+            console.error(`Invalid roster data for ${teamKey}`);
+            return [];
+          }
+
+          // Parse player keys and positions from roster data
+          const teamArray = rosterData.fantasy_content.team;
+          const roster = teamArray[1]?.roster?.["0"]?.players;
+          if (!roster) {
+            console.error(`No roster found for ${teamKey}`);
+            return [];
+          }
+
+          const playerKeys: string[] = [];
+          const playerPositions = new Map<string, string>();
+
+          for (const key of Object.keys(roster).filter(key => key !== 'count')) {
+            const playerData = roster[key];
+            const playerKey = playerData?.player?.[0]?.[0]?.player_key;
+            const selectedPosition = playerData?.player?.[1]?.selected_position?.[1]?.position || 'Unknown';
+            if (playerKey) {
+              playerKeys.push(playerKey);
+              playerPositions.set(playerKey, selectedPosition);
+            }
+          }
+
+          if (playerKeys.length === 0) {
+            return [];
+          }
+
+          // Fetch player stats using the shared service
+          const statsData = await yahooStatsService.fetchPlayerStats(playerKeys, access_token, parseInt(week));
+
+          // Parse roster with stats using the shared service
+          return yahooStatsService.parseRosterWithStats(playerKeys, playerPositions, statsData);
+
+        } catch (error) {
+          console.error(`Error fetching roster for ${teamKey}:`, error);
           return [];
         }
-
-        return await rosterRes.json();
       };
 
       const [team1Roster, team2Roster] = await Promise.all([
-        fetchTeamRoster(team1.team_key),
-        fetchTeamRoster(team2.team_key),
+        fetchTeamRosterWithStats(team1.team_key),
+        fetchTeamRosterWithStats(team2.team_key),
       ]);
 
       return NextResponse.json({
