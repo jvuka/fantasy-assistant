@@ -113,14 +113,39 @@ export async function GET(req: NextRequest, { params }: { params: { team_key: st
             }
             
             // Parse stats - handle both weekly and season stats format
-            const stats: { points?: number; goals?: number; assists?: number } = {};
+            // Detect if player is a goalie
+            const isGoalie = position === 'G';
+            
+            const stats: any = {
+              goals: 0,
+              assists: 0,
+              points: 0,
+              ppp: 0,
+              hits: 0,
+              plus_minus: 0,
+              wins: 0,
+              gaa: 0,
+              sv_pct: 0
+            };
+            
             if (playerStats && playerStats.stats) {
+              console.log(`Stats for ${name}:`, JSON.stringify(playerStats.stats));
               for (const stat of playerStats.stats) {
                 const statId = stat.stat.stat_id;
                 const value = stat.stat.value;
-                if (statId === '4') stats.points = parseFloat(value) || 0; // stat_id 4 is points
-                else if (statId === '2') stats.goals = parseInt(value) || 0; // 2 is goals
-                else if (statId === '3') stats.assists = parseInt(value) || 0; // 3 is assists
+                
+                // Player stats
+                if (statId === '2') stats.goals = parseInt(value) || 0; // Goals
+                else if (statId === '3') stats.assists = parseInt(value) || 0; // Assists
+                else if (statId === '4') stats.points = parseFloat(value) || 0; // Fantasy Points
+                else if (statId === '13') stats.ppp = parseInt(value) || 0; // Power Play Points
+                else if (statId === '31') stats.hits = parseInt(value) || 0; // Hits
+                else if (statId === '28') stats.plus_minus = parseInt(value) || 0; // Plus/Minus
+                
+                // Goalie stats
+                else if (statId === '22') stats.wins = parseInt(value) || 0; // Wins
+                else if (statId === '23') stats.gaa = parseFloat(value) || 0; // Goals Against Average
+                else if (statId === '24') stats.sv_pct = parseFloat(value) || 0; // Save Percentage
               }
             }
             
@@ -132,9 +157,16 @@ export async function GET(req: NextRequest, { params }: { params: { team_key: st
               name,
               position,
               nhl_team,
-              points: stats.points || 0,
-              goals: stats.goals || 0,
-              assists: stats.assists || 0,
+              is_goalie: isGoalie,
+              goals: stats.goals,
+              assists: stats.assists,
+              points: stats.points,
+              ppp: stats.ppp,
+              hits: stats.hits,
+              plus_minus: stats.plus_minus,
+              wins: stats.wins,
+              gaa: stats.gaa,
+              sv_pct: stats.sv_pct,
               selected_position,
               is_benched,
             });

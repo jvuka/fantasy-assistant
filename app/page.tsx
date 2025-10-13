@@ -573,9 +573,14 @@ export default function Home() {
                   }}>
                     <thead>
                       <tr style={{backgroundColor: '#003366', color: 'white'}}>
-                        <th style={{padding: '8px', textAlign: 'left'}}>Player</th>
-                        <th style={{padding: '8px', textAlign: 'center'}}>Pos</th>
-                        <th style={{padding: '8px', textAlign: 'center'}}>Pts</th>
+                        <th style={{padding: '6px', textAlign: 'left', fontSize: '12px'}}>Player</th>
+                        <th style={{padding: '6px', textAlign: 'center', fontSize: '12px'}}>Pos</th>
+                        <th style={{padding: '6px', textAlign: 'center', fontSize: '12px'}}>G</th>
+                        <th style={{padding: '6px', textAlign: 'center', fontSize: '12px'}}>A</th>
+                        <th style={{padding: '6px', textAlign: 'center', fontSize: '12px'}}>P</th>
+                        <th style={{padding: '6px', textAlign: 'center', fontSize: '12px'}}>PPP</th>
+                        <th style={{padding: '6px', textAlign: 'center', fontSize: '12px'}}>HIT</th>
+                        <th style={{padding: '6px', textAlign: 'center', fontSize: '12px'}}>+/-</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -588,12 +593,27 @@ export default function Home() {
                             opacity: player.is_benched ? 0.6 : 1
                           }}
                         >
-                          <td style={{padding: '8px'}}>
+                          <td style={{padding: '6px', fontSize: '12px'}}>
                             {player.name}
-                            {player.is_benched && <span style={{marginLeft: '8px', fontSize: '11px', color: '#666', fontStyle: 'italic'}}>(Bench)</span>}
+                            {player.is_benched && <span style={{marginLeft: '4px', fontSize: '10px', color: '#666', fontStyle: 'italic'}}>(BN)</span>}
                           </td>
-                          <td style={{padding: '8px', textAlign: 'center'}}>{player.position}</td>
-                          <td style={{padding: '8px', textAlign: 'center', fontWeight: 'bold'}}>{player.points}</td>
+                          <td style={{padding: '6px', textAlign: 'center', fontSize: '12px'}}>{player.position}</td>
+                          {player.is_goalie ? (
+                            <>
+                              <td style={{padding: '6px', textAlign: 'center', fontSize: '12px'}} colSpan={2}>{player.wins}W</td>
+                              <td style={{padding: '6px', textAlign: 'center', fontSize: '12px'}} colSpan={2}>{player.gaa?.toFixed(2)}</td>
+                              <td style={{padding: '6px', textAlign: 'center', fontSize: '12px'}} colSpan={3}>{player.sv_pct?.toFixed(3)}</td>
+                            </>
+                          ) : (
+                            <>
+                              <td style={{padding: '6px', textAlign: 'center', fontSize: '12px'}}>{player.goals || 0}</td>
+                              <td style={{padding: '6px', textAlign: 'center', fontSize: '12px'}}>{player.assists || 0}</td>
+                              <td style={{padding: '6px', textAlign: 'center', fontSize: '12px', fontWeight: 'bold'}}>{player.points || 0}</td>
+                              <td style={{padding: '6px', textAlign: 'center', fontSize: '12px'}}>{player.ppp || 0}</td>
+                              <td style={{padding: '6px', textAlign: 'center', fontSize: '12px'}}>{player.hits || 0}</td>
+                              <td style={{padding: '6px', textAlign: 'center', fontSize: '12px'}}>{player.plus_minus > 0 ? '+' : ''}{player.plus_minus || 0}</td>
+                            </>
+                          )}
                         </tr>
                       ))}
                     </tbody>
@@ -612,9 +632,14 @@ export default function Home() {
                   }}>
                     <thead>
                       <tr style={{backgroundColor: '#003366', color: 'white'}}>
-                        <th style={{padding: '8px', textAlign: 'left'}}>Player</th>
-                        <th style={{padding: '8px', textAlign: 'center'}}>Pos</th>
-                        <th style={{padding: '8px', textAlign: 'center'}}>Pts</th>
+                        <th style={{padding: '6px', textAlign: 'left', fontSize: '12px'}}>Player</th>
+                        <th style={{padding: '6px', textAlign: 'center', fontSize: '12px'}}>Pos</th>
+                        <th style={{padding: '6px', textAlign: 'center', fontSize: '12px'}}>G</th>
+                        <th style={{padding: '6px', textAlign: 'center', fontSize: '12px'}}>A</th>
+                        <th style={{padding: '6px', textAlign: 'center', fontSize: '12px'}}>P</th>
+                        <th style={{padding: '6px', textAlign: 'center', fontSize: '12px'}}>PPP</th>
+                        <th style={{padding: '6px', textAlign: 'center', fontSize: '12px'}}>HIT</th>
+                        <th style={{padding: '6px', textAlign: 'center', fontSize: '12px'}}>+/-</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -627,12 +652,27 @@ export default function Home() {
                             opacity: player.is_benched ? 0.6 : 1
                           }}
                         >
-                          <td style={{padding: '8px'}}>
+                          <td style={{padding: '6px', fontSize: '12px'}}>
                             {player.name}
-                            {player.is_benched && <span style={{marginLeft: '8px', fontSize: '11px', color: '#666', fontStyle: 'italic'}}>(Bench)</span>}
+                            {player.is_benched && <span style={{marginLeft: '4px', fontSize: '10px', color: '#666', fontStyle: 'italic'}}>(BN)</span>}
                           </td>
-                          <td style={{padding: '8px', textAlign: 'center'}}>{player.position}</td>
-                          <td style={{padding: '8px', textAlign: 'center', fontWeight: 'bold'}}>{player.points}</td>
+                          <td style={{padding: '6px', textAlign: 'center', fontSize: '12px'}}>{player.position}</td>
+                          {player.is_goalie ? (
+                            <>
+                              <td style={{padding: '6px', textAlign: 'center', fontSize: '12px'}} colSpan={2}>{player.wins}W</td>
+                              <td style={{padding: '6px', textAlign: 'center', fontSize: '12px'}} colSpan={2}>{player.gaa?.toFixed(2)}</td>
+                              <td style={{padding: '6px', textAlign: 'center', fontSize: '12px'}} colSpan={3}>{player.sv_pct?.toFixed(3)}</td>
+                            </>
+                          ) : (
+                            <>
+                              <td style={{padding: '6px', textAlign: 'center', fontSize: '12px'}}>{player.goals || 0}</td>
+                              <td style={{padding: '6px', textAlign: 'center', fontSize: '12px'}}>{player.assists || 0}</td>
+                              <td style={{padding: '6px', textAlign: 'center', fontSize: '12px', fontWeight: 'bold'}}>{player.points || 0}</td>
+                              <td style={{padding: '6px', textAlign: 'center', fontSize: '12px'}}>{player.ppp || 0}</td>
+                              <td style={{padding: '6px', textAlign: 'center', fontSize: '12px'}}>{player.hits || 0}</td>
+                              <td style={{padding: '6px', textAlign: 'center', fontSize: '12px'}}>{player.plus_minus > 0 ? '+' : ''}{player.plus_minus || 0}</td>
+                            </>
+                          )}
                         </tr>
                       ))}
                     </tbody>
