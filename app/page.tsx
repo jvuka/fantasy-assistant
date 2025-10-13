@@ -137,10 +137,13 @@ export default function Home() {
       const res = await fetch(`/api/yahoo/players/${selectedLeague.key}?start=${start}&count=25`);
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Failed to load players');
+      // Store both players and goalies
       setPlayers(data.players || []);
       setPlayersTotal(data.total || 0);
       setPlayersPage(page);
       setView('players');
+      // Store goalies in the matchup state temporarily (we'll use a separate state later if needed)
+      setMatchup({ ...matchup, goalies: data.goalies || [] });
     } catch (error) {
       console.error('Error loading players:', error);
     } finally {
@@ -685,56 +688,111 @@ export default function Home() {
           {/* Players View */}
           {view === 'players' && (
             <div style={{marginTop: '24px'}}>
-              <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px'}}>
-                <h2 style={{margin: 0}}>Available Players - {selectedLeague?.name}</h2>
-              </div>
-              <div style={{overflowX: 'auto'}}>
-                <table style={{
-                  width: '100%',
-                  borderCollapse: 'collapse',
-                  backgroundColor: 'white',
-                  boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
-                }}>
-                  <thead>
-                    <tr style={{backgroundColor: '#003366', color: 'white'}}>
-                      <th style={{padding: '12px', textAlign: 'left', borderBottom: '2px solid #ddd'}}>Rank</th>
-                      <th style={{padding: '12px', textAlign: 'left', borderBottom: '2px solid #ddd'}}>Player Name</th>
-                      <th style={{padding: '12px', textAlign: 'left', borderBottom: '2px solid #ddd'}}>Position</th>
-                      <th style={{padding: '12px', textAlign: 'left', borderBottom: '2px solid #ddd'}}>NHL Team</th>
-                      <th style={{padding: '12px', textAlign: 'center', borderBottom: '2px solid #ddd'}}>GP</th>
-                      <th style={{padding: '12px', textAlign: 'center', borderBottom: '2px solid #ddd'}}>Goals</th>
-                      <th style={{padding: '12px', textAlign: 'center', borderBottom: '2px solid #ddd'}}>Assists</th>
-                      <th style={{padding: '12px', textAlign: 'center', borderBottom: '2px solid #ddd'}}>Points</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {players.map((player: any, index: number) => (
-                      <tr 
-                        key={player.player_id}
-                        style={{
-                          borderBottom: '1px solid #eee',
-                          backgroundColor: index % 2 === 0 ? 'white' : '#f9f9f9'
-                        }}
-                        onMouseOver={(e) => {
-                          e.currentTarget.style.backgroundColor = '#f0f8ff';
-                        }}
-                        onMouseOut={(e) => {
-                          e.currentTarget.style.backgroundColor = index % 2 === 0 ? 'white' : '#f9f9f9';
-                        }}
-                      >
-                        <td style={{padding: '12px', fontWeight: 'bold', color: '#0066cc'}}>{player.editorial_rank || '-'}</td>
-                        <td style={{padding: '12px', fontWeight: '500'}}>{player.name}</td>
-                        <td style={{padding: '12px'}}>{player.position}</td>
-                        <td style={{padding: '12px', color: '#666'}}>{player.nhl_team}</td>
-                        <td style={{padding: '12px', textAlign: 'center'}}>{player.games_played}</td>
-                        <td style={{padding: '12px', textAlign: 'center'}}>{player.goals}</td>
-                        <td style={{padding: '12px', textAlign: 'center'}}>{player.assists}</td>
-                        <td style={{padding: '12px', textAlign: 'center', fontWeight: 'bold'}}>{player.points}</td>
+              {/* Players Table */}
+              <div style={{marginBottom: '32px'}}>
+                <h2 style={{marginBottom: '16px'}}>Available Players - {selectedLeague?.name}</h2>
+                <div style={{overflowX: 'auto'}}>
+                  <table style={{
+                    width: '100%',
+                    borderCollapse: 'collapse',
+                    backgroundColor: 'white',
+                    boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
+                  }}>
+                    <thead>
+                      <tr style={{backgroundColor: '#003366', color: 'white'}}>
+                        <th style={{padding: '10px', textAlign: 'left', borderBottom: '2px solid #ddd'}}>Player Name</th>
+                        <th style={{padding: '10px', textAlign: 'left', borderBottom: '2px solid #ddd'}}>Position</th>
+                        <th style={{padding: '10px', textAlign: 'left', borderBottom: '2px solid #ddd'}}>NHL Team</th>
+                        <th style={{padding: '10px', textAlign: 'center', borderBottom: '2px solid #ddd'}}>GP</th>
+                        <th style={{padding: '10px', textAlign: 'center', borderBottom: '2px solid #ddd'}}>G</th>
+                        <th style={{padding: '10px', textAlign: 'center', borderBottom: '2px solid #ddd'}}>A</th>
+                        <th style={{padding: '10px', textAlign: 'center', borderBottom: '2px solid #ddd'}}>P</th>
+                        <th style={{padding: '10px', textAlign: 'center', borderBottom: '2px solid #ddd'}}>PPP</th>
+                        <th style={{padding: '10px', textAlign: 'center', borderBottom: '2px solid #ddd'}}>HIT</th>
+                        <th style={{padding: '10px', textAlign: 'center', borderBottom: '2px solid #ddd'}}>+/-</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody>
+                      {players.map((player: any, index: number) => (
+                        <tr
+                          key={player.player_id}
+                          style={{
+                            borderBottom: '1px solid #eee',
+                            backgroundColor: index % 2 === 0 ? 'white' : '#f9f9f9'
+                          }}
+                          onMouseOver={(e) => {
+                            e.currentTarget.style.backgroundColor = '#f0f8ff';
+                          }}
+                          onMouseOut={(e) => {
+                            e.currentTarget.style.backgroundColor = index % 2 === 0 ? 'white' : '#f9f9f9';
+                          }}
+                        >
+                          <td style={{padding: '10px', fontWeight: '500'}}>{player.name}</td>
+                          <td style={{padding: '10px'}}>{player.position}</td>
+                          <td style={{padding: '10px', color: '#666'}}>{player.nhl_team}</td>
+                          <td style={{padding: '10px', textAlign: 'center'}}>{player.games_played}</td>
+                          <td style={{padding: '10px', textAlign: 'center'}}>{player.goals}</td>
+                          <td style={{padding: '10px', textAlign: 'center'}}>{player.assists}</td>
+                          <td style={{padding: '10px', textAlign: 'center', fontWeight: 'bold'}}>{player.points}</td>
+                          <td style={{padding: '10px', textAlign: 'center'}}>{player.ppp}</td>
+                          <td style={{padding: '10px', textAlign: 'center'}}>{player.hits}</td>
+                          <td style={{padding: '10px', textAlign: 'center'}}>{player.plus_minus > 0 ? '+' : ''}{player.plus_minus}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               </div>
+
+              {/* Top 10 Goalies Table */}
+              {matchup?.goalies && matchup.goalies.length > 0 && (
+                <div style={{marginBottom: '32px'}}>
+                  <h2 style={{marginBottom: '16px'}}>Top 10 Goalies</h2>
+                  <div style={{overflowX: 'auto'}}>
+                    <table style={{
+                      width: '100%',
+                      borderCollapse: 'collapse',
+                      backgroundColor: 'white',
+                      boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
+                    }}>
+                      <thead>
+                        <tr style={{backgroundColor: '#003366', color: 'white'}}>
+                          <th style={{padding: '10px', textAlign: 'left', borderBottom: '2px solid #ddd'}}>Goalie Name</th>
+                          <th style={{padding: '10px', textAlign: 'left', borderBottom: '2px solid #ddd'}}>NHL Team</th>
+                          <th style={{padding: '10px', textAlign: 'center', borderBottom: '2px solid #ddd'}}>GP</th>
+                          <th style={{padding: '10px', textAlign: 'center', borderBottom: '2px solid #ddd'}}>W</th>
+                          <th style={{padding: '10px', textAlign: 'center', borderBottom: '2px solid #ddd'}}>GAA</th>
+                          <th style={{padding: '10px', textAlign: 'center', borderBottom: '2px solid #ddd'}}>SV%</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {matchup.goalies.map((goalie: any, index: number) => (
+                          <tr
+                            key={goalie.player_id}
+                            style={{
+                              borderBottom: '1px solid #eee',
+                              backgroundColor: index % 2 === 0 ? 'white' : '#f9f9f9'
+                            }}
+                            onMouseOver={(e) => {
+                              e.currentTarget.style.backgroundColor = '#f0f8ff';
+                            }}
+                            onMouseOut={(e) => {
+                              e.currentTarget.style.backgroundColor = index % 2 === 0 ? 'white' : '#f9f9f9';
+                            }}
+                          >
+                            <td style={{padding: '10px', fontWeight: '500'}}>{goalie.name}</td>
+                            <td style={{padding: '10px', color: '#666'}}>{goalie.nhl_team}</td>
+                            <td style={{padding: '10px', textAlign: 'center'}}>{goalie.games_played}</td>
+                            <td style={{padding: '10px', textAlign: 'center', fontWeight: 'bold'}}>{goalie.wins}</td>
+                            <td style={{padding: '10px', textAlign: 'center'}}>{goalie.gaa?.toFixed(2)}</td>
+                            <td style={{padding: '10px', textAlign: 'center'}}>{goalie.sv_pct?.toFixed(3)}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
               
               {/* Pagination */}
               <div style={{marginTop: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
