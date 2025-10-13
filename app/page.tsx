@@ -574,6 +574,73 @@ export default function Home() {
                     <thead>
                       <tr style={{backgroundColor: '#003366', color: 'white'}}>
                         <th style={{padding: '8px', textAlign: 'left'}}>Player</th>
+                        <th style={{padding: '8px', textAlign: 'center'}}>Pos</th>
+                        <th style={{padding: '8px', textAlign: 'center'}}>Pts</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {matchup.team1.roster.map((player: any, index: number) => (
+                        <tr
+                          key={index}
+                          style={{
+                            borderBottom: '1px solid #eee',
+                            backgroundColor: player.is_benched ? '#f5f5f5' : 'white',
+                            opacity: player.is_benched ? 0.6 : 1
+                          }}
+                        >
+                          <td style={{padding: '8px'}}>
+                            {player.name}
+                            {player.is_benched && <span style={{marginLeft: '8px', fontSize: '11px', color: '#666', fontStyle: 'italic'}}>(Bench)</span>}
+                          </td>
+                          <td style={{padding: '8px', textAlign: 'center'}}>{player.position}</td>
+                          <td style={{padding: '8px', textAlign: 'center', fontWeight: 'bold'}}>{player.points}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+
+                {/* Team 2 Roster */}
+                <div>
+                  <h3 style={{marginBottom: '12px', color: '#003366'}}>{matchup.team2.name} Roster</h3>
+                  <table style={{
+                    width: '100%',
+                    borderCollapse: 'collapse',
+                    backgroundColor: 'white',
+                    boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+                    fontSize: '14px'
+                  }}>
+                    <thead>
+                      <tr style={{backgroundColor: '#003366', color: 'white'}}>
+                        <th style={{padding: '8px', textAlign: 'left'}}>Player</th>
+                        <th style={{padding: '8px', textAlign: 'center'}}>Pos</th>
+                        <th style={{padding: '8px', textAlign: 'center'}}>Pts</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {matchup.team2.roster.map((player: any, index: number) => (
+                        <tr
+                          key={index}
+                          style={{
+                            borderBottom: '1px solid #eee',
+                            backgroundColor: player.is_benched ? '#f5f5f5' : 'white',
+                            opacity: player.is_benched ? 0.6 : 1
+                          }}
+                        >
+                          <td style={{padding: '8px'}}>
+                            {player.name}
+                            {player.is_benched && <span style={{marginLeft: '8px', fontSize: '11px', color: '#666', fontStyle: 'italic'}}>(Bench)</span>}
+                          </td>
+                          <td style={{padding: '8px', textAlign: 'center'}}>{player.position}</td>
+                          <td style={{padding: '8px', textAlign: 'center', fontWeight: 'bold'}}>{player.points}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Players View */}
           {view === 'players' && (
@@ -665,73 +732,6 @@ export default function Home() {
                   >
                     Next
                   </button>
-                </div>
-              </div>
-            </div>
-          )}
-                        <th style={{padding: '8px', textAlign: 'center'}}>Pos</th>
-                        <th style={{padding: '8px', textAlign: 'center'}}>Pts</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {matchup.team1.roster.map((player: any, index: number) => (
-                        <tr
-                          key={index}
-                          style={{
-                            borderBottom: '1px solid #eee',
-                            backgroundColor: player.is_benched ? '#f5f5f5' : 'white',
-                            opacity: player.is_benched ? 0.6 : 1
-                          }}
-                        >
-                          <td style={{padding: '8px'}}>
-                            {player.name}
-                            {player.is_benched && <span style={{marginLeft: '8px', fontSize: '11px', color: '#666', fontStyle: 'italic'}}>(Bench)</span>}
-                          </td>
-                          <td style={{padding: '8px', textAlign: 'center'}}>{player.position}</td>
-                          <td style={{padding: '8px', textAlign: 'center', fontWeight: 'bold'}}>{player.points}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-
-                {/* Team 2 Roster */}
-                <div>
-                  <h3 style={{marginBottom: '12px', color: '#003366'}}>{matchup.team2.name} Roster</h3>
-                  <table style={{
-                    width: '100%',
-                    borderCollapse: 'collapse',
-                    backgroundColor: 'white',
-                    boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
-                    fontSize: '14px'
-                  }}>
-                    <thead>
-                      <tr style={{backgroundColor: '#003366', color: 'white'}}>
-                        <th style={{padding: '8px', textAlign: 'left'}}>Player</th>
-                        <th style={{padding: '8px', textAlign: 'center'}}>Pos</th>
-                        <th style={{padding: '8px', textAlign: 'center'}}>Pts</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {matchup.team2.roster.map((player: any, index: number) => (
-                        <tr
-                          key={index}
-                          style={{
-                            borderBottom: '1px solid #eee',
-                            backgroundColor: player.is_benched ? '#f5f5f5' : 'white',
-                            opacity: player.is_benched ? 0.6 : 1
-                          }}
-                        >
-                          <td style={{padding: '8px'}}>
-                            {player.name}
-                            {player.is_benched && <span style={{marginLeft: '8px', fontSize: '11px', color: '#666', fontStyle: 'italic'}}>(Bench)</span>}
-                          </td>
-                          <td style={{padding: '8px', textAlign: 'center'}}>{player.position}</td>
-                          <td style={{padding: '8px', textAlign: 'center', fontWeight: 'bold'}}>{player.points}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
                 </div>
               </div>
             </div>
