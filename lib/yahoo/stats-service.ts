@@ -21,8 +21,7 @@ export interface PlayerInfo {
   is_goalie: boolean;
 }
 
-export interface RosterPlayer extends PlayerInfo {
-  stats: PlayerStats;
+export interface RosterPlayer extends PlayerInfo, PlayerStats {
   selected_position: string;
   is_benched: boolean;
 }
@@ -249,7 +248,7 @@ export class YahooStatsService {
           nhl_team,
           player_key,
           is_goalie: isGoalie,
-          stats,
+          ...stats,
           selected_position,
           is_benched,
         });
@@ -347,8 +346,8 @@ export class YahooStatsServiceTests {
 
     console.assert(result.length === 1, `Expected 1 player, got ${result.length}`);
     console.assert(result[0].name === 'Alex Ovechkin', `Expected name 'Alex Ovechkin', got '${result[0].name}'`);
-    console.assert(result[0].stats.goals === 25, `Expected goals 25, got ${result[0].stats.goals}`);
-    console.assert(result[0].stats.assists === 15, `Expected assists 15, got ${result[0].stats.assists}`);
+    console.assert(result[0].goals === 25, `Expected goals 25, got ${result[0].goals}`);
+    console.assert(result[0].assists === 15, `Expected assists 15, got ${result[0].assists}`);
     console.assert(result[0].selected_position === 'LW', `Expected position 'LW', got '${result[0].selected_position}'`);
     console.assert(result[0].is_benched === false, `Expected is_benched false, got ${result[0].is_benched}`);
   }
