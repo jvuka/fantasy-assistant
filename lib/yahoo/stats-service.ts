@@ -129,7 +129,6 @@ export class YahooStatsService {
     const stats: PlayerStats = {
       goals: 0,
       assists: 0,
-      points: 0,
       ppp: 0,
       hits: 0,
       plus_minus: 0,
