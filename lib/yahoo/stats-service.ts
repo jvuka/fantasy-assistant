@@ -4,8 +4,7 @@
 export interface PlayerStats {
   goals: number;
   assists: number;
-  points: number;
-  ppp: number;
+  ppp: number; // Power Play Points (Playoff Points)
   hits: number;
   plus_minus: number;
   wins: number;
@@ -147,8 +146,7 @@ export class YahooStatsService {
         // Player stats
         if (statId === '2') stats.goals = parseInt(value) || 0; // Goals
         else if (statId === '3') stats.assists = parseInt(value) || 0; // Assists
-        else if (statId === '4') stats.points = parseFloat(value) || 0; // Fantasy Points
-        else if (statId === '13') stats.ppp = parseInt(value) || 0; // Power Play Points
+        else if (statId === '13') stats.ppp = parseInt(value) || 0; // Power Play Points (Playoff Points)
         else if (statId === '31') stats.hits = parseInt(value) || 0; // Hits
         else if (statId === '28') stats.plus_minus = parseInt(value) || 0; // Plus/Minus
 
@@ -208,7 +206,6 @@ export class YahooStatsService {
         const stats: PlayerStats = {
           goals: 0,
           assists: 0,
-          points: 0,
           ppp: 0,
           hits: 0,
           plus_minus: 0,
@@ -226,8 +223,7 @@ export class YahooStatsService {
             // Player stats
             if (statId === '2') stats.goals = parseInt(value) || 0; // Goals
             else if (statId === '3') stats.assists = parseInt(value) || 0; // Assists
-            else if (statId === '4') stats.points = parseFloat(value) || 0; // Fantasy Points
-            else if (statId === '13') stats.ppp = parseInt(value) || 0; // Power Play Points
+            else if (statId === '13') stats.ppp = parseInt(value) || 0; // Power Play Points (Playoff Points)
             else if (statId === '31') stats.hits = parseInt(value) || 0; // Hits
             else if (statId === '28') stats.plus_minus = parseInt(value) || 0; // Plus/Minus
 
@@ -297,7 +293,7 @@ export class YahooStatsServiceTests {
       stats: [
         { stat: { stat_id: '2', value: '25' } }, // Goals
         { stat: { stat_id: '3', value: '15' } }, // Assists
-        { stat: { stat_id: '4', value: '12.5' } }, // Points
+        { stat: { stat_id: '13', value: '5' } }, // Power Play Points (Playoff Points)
         { stat: { stat_id: '22', value: '3' } }, // Wins (goalie)
         { stat: { stat_id: '23', value: '2.45' } } // GAA (goalie)
       ]
@@ -307,7 +303,7 @@ export class YahooStatsServiceTests {
 
     console.assert(result.goals === 25, `Expected goals 25, got ${result.goals}`);
     console.assert(result.assists === 15, `Expected assists 15, got ${result.assists}`);
-    console.assert(result.points === 12.5, `Expected points 12.5, got ${result.points}`);
+    console.assert(result.ppp === 5, `Expected ppp 5, got ${result.ppp}`);
     console.assert(result.wins === 3, `Expected wins 3, got ${result.wins}`);
     console.assert(result.gaa === 2.45, `Expected gaa 2.45, got ${result.gaa}`);
   }
