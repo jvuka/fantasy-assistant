@@ -414,9 +414,9 @@ export default function Home() {
                       <th style={{padding: '12px', textAlign: 'left', borderBottom: '2px solid #ddd'}}>Player Name</th>
                       <th style={{padding: '12px', textAlign: 'left', borderBottom: '2px solid #ddd'}}>Position</th>
                       <th style={{padding: '12px', textAlign: 'left', borderBottom: '2px solid #ddd'}}>NHL Team</th>
-                      <th style={{padding: '12px', textAlign: 'center', borderBottom: '2px solid #ddd'}}>Points</th>
                       <th style={{padding: '12px', textAlign: 'center', borderBottom: '2px solid #ddd'}}>Goals</th>
                       <th style={{padding: '12px', textAlign: 'center', borderBottom: '2px solid #ddd'}}>Assists</th>
+                      <th style={{padding: '12px', textAlign: 'center', borderBottom: '2px solid #ddd'}}>PPP</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -437,9 +437,9 @@ export default function Home() {
                         <td style={{padding: '12px', fontWeight: '500'}}>{player.name}</td>
                         <td style={{padding: '12px'}}>{player.position}</td>
                         <td style={{padding: '12px', color: '#666'}}>{player.nhl_team}</td>
-                        <td style={{padding: '12px', textAlign: 'center', fontWeight: 'bold'}}>{player.points}</td>
                         <td style={{padding: '12px', textAlign: 'center'}}>{player.goals}</td>
                         <td style={{padding: '12px', textAlign: 'center'}}>{player.assists}</td>
+                        <td style={{padding: '12px', textAlign: 'center'}}>{player.ppp}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -611,7 +611,6 @@ export default function Home() {
                             <>
                               <td style={{padding: '6px', textAlign: 'center', fontSize: '12px'}}>{player.goals || 0}</td>
                               <td style={{padding: '6px', textAlign: 'center', fontSize: '12px'}}>{player.assists || 0}</td>
-                              <td style={{padding: '6px', textAlign: 'center', fontSize: '12px', fontWeight: 'bold'}}>{player.points || 0}</td>
                               <td style={{padding: '6px', textAlign: 'center', fontSize: '12px'}}>{player.ppp || 0}</td>
                               <td style={{padding: '6px', textAlign: 'center', fontSize: '12px'}}>{player.hits || 0}</td>
                               <td style={{padding: '6px', textAlign: 'center', fontSize: '12px'}}>{player.plus_minus > 0 ? '+' : ''}{player.plus_minus || 0}</td>
