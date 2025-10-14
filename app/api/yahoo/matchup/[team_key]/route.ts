@@ -137,15 +137,22 @@ export async function GET(req: NextRequest, { params }: { params: { team_key: st
             }
           }
 
+          console.log('Matchup debug: Found player keys:', playerKeys);
+
           if (playerKeys.length === 0) {
             return [];
           }
 
           // Fetch player stats using the shared service
+          console.log('Matchup debug: Fetching stats for players:', playerKeys);
           const statsData = await yahooStatsService.fetchPlayerStats(playerKeys, access_token, parseInt(week));
+          console.log('Matchup debug: Stats fetched, parsing...');
 
           // Parse roster with stats using the shared service
-          return yahooStatsService.parseRosterWithStats(playerKeys, playerPositions, statsData);
+          const parsedRoster = yahooStatsService.parseRosterWithStats(playerKeys, playerPositions, statsData);
+          console.log('Matchup debug: Parsed roster:', parsedRoster);
+
+          return parsedRoster;
 
         } catch (error) {
           console.error(`Error fetching roster for ${teamKey}:`, error);

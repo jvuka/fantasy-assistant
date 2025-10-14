@@ -417,6 +417,8 @@ export default function Home() {
                       <th style={{padding: '12px', textAlign: 'center', borderBottom: '2px solid #ddd'}}>Goals</th>
                       <th style={{padding: '12px', textAlign: 'center', borderBottom: '2px solid #ddd'}}>Assists</th>
                       <th style={{padding: '12px', textAlign: 'center', borderBottom: '2px solid #ddd'}}>PPP</th>
+                      <th style={{padding: '12px', textAlign: 'center', borderBottom: '2px solid #ddd'}}>+/-</th>
+                      <th style={{padding: '12px', textAlign: 'center', borderBottom: '2px solid #ddd'}}>Hits</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -440,6 +442,8 @@ export default function Home() {
                         <td style={{padding: '12px', textAlign: 'center'}}>{player.goals}</td>
                         <td style={{padding: '12px', textAlign: 'center'}}>{player.assists}</td>
                         <td style={{padding: '12px', textAlign: 'center'}}>{player.ppp}</td>
+                        <td style={{padding: '12px', textAlign: 'center'}}>{player.plus_minus > 0 ? '+' : ''}{player.plus_minus}</td>
+                        <td style={{padding: '12px', textAlign: 'center'}}>{player.hits}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -612,6 +616,8 @@ export default function Home() {
                               <td style={{padding: '6px', textAlign: 'center', fontSize: '12px'}}>{player.goals || 0}</td>
                               <td style={{padding: '6px', textAlign: 'center', fontSize: '12px'}}>{player.assists || 0}</td>
                               <td style={{padding: '6px', textAlign: 'center', fontSize: '12px'}}>{player.ppp || 0}</td>
+                              <td style={{padding: '6px', textAlign: 'center', fontSize: '12px'}}>{player.plus_minus > 0 ? '+' : ''}{player.plus_minus || 0}</td>
+                              <td style={{padding: '6px', textAlign: 'center', fontSize: '12px'}}>{player.hits || 0}</td>
                               <td style={{padding: '6px', textAlign: 'center', fontSize: '12px'}}>{player.hits || 0}</td>
                               <td style={{padding: '6px', textAlign: 'center', fontSize: '12px'}}>{player.plus_minus > 0 ? '+' : ''}{player.plus_minus || 0}</td>
                             </>
